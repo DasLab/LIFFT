@@ -1,3 +1,4 @@
+
 function data_center = centralize( data, refcol, PLOTSTUFF );
 % data_center = centralize( data, refcol, PLOTSTUFF );
 %
@@ -15,12 +16,12 @@ data_center(:,refcol) = data(:,refcol);
 
 if PLOTSTUFF; colorcode = jet( size( data, 2 ) ); r = [-5:0.1:5]; clf; end;
 
-for i  = 1:size( data, 2 )
+for i  = 2:size( data, 2 )
   logshift = log( abs(data(:,i))./abs(data(:,refcol)) )/log(2);
 
   % remove anything crazy
-   logshift = logshift( find( ~isnan(logshift) & ~isinf( logshift) ) );
-%   logshift = log( abs(data(:,i))) /log(2);
+  logshift = logshift( find( ~isnan(logshift) & ~isinf( logshift) ) );
+  
   if PLOTSTUFF
     h = hist( logshift, r );
     plot( r, h+10*i, 'color', colorcode(i,:) ); hold on
@@ -40,7 +41,6 @@ for i  = 1:size( data, 2 )
   data_center(:,i) = data(:,i) / (2^m); 
 end
 hold off
-
 
 
 

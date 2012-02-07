@@ -1,4 +1,4 @@
-function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, p1_s, p2_s ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
+function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
 %  log_L  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
 %
 % Likelihood-based analysis of structure mapping titration -- optimizes lane normalizaton and calculates
@@ -62,15 +62,15 @@ log_L = zeros( length( param1 ), length( param2 ) );
 sigma_all = zeros( size(input_data,1)+1, length( param1 ), length( param2 ) );
 for i = 1: length( param1)
   fprintf(1,'Doing with loop %d out of %d...\n', i, length( param1) );
-   if exist( 'parfor' )
+  if exist( 'parfor' )
     parfor j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
-							input_data, conc, fit_type, [], C_state_in );
+                            input_data, conc, fit_type, [], C_state_in );
     end
   else
     for j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
-							input_data, conc, fit_type, [], C_state_in );
+                            input_data, conc, fit_type, [], C_state_in );
     end
   end
 end
@@ -129,6 +129,7 @@ log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
 conc_fine = 10.^[min(log_10_conc):0.01:max(log_10_conc)];
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
+
 
 C_state1 = ones(size(pred_fit_fine,2),1)*C_state(1,:);
 C_state2 = ones(size(pred_fit_fine,2),1)*C_state(2,:);
@@ -209,8 +210,7 @@ log_L_cutoff = log_L_max - 2.0;
 p_low = param( min_idx );
 if ( min_idx > 1 )
   idx = min_idx-1;
-    while (idx > 1 & log_L(idx) < log_L( idx+1) )
-%    while (idx > 1 )
+  while (idx > 1 & log_L(idx) < log_L( idx+1) )
     idx = idx - 1;  
   end
   %p_low = param( idx+1 );
@@ -231,7 +231,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [logL, sigma_vector] = run_inner_loop( p1, p2, ...
-						input_data, conc, fit_type, lane_normalization_in, C_state_in )
+                           input_data, conc, fit_type, lane_normalization_in, C_state_in )
 
 %p1 = param1( i );
 % p2 = param2( j );
@@ -278,4 +278,3 @@ legend( num2str( plot_res' ), 4 )
 xlabel( 'Concentration' ); ylabel( 'Fraction transition' );
 set(gcf, 'PaperPositionMode','auto','color','white');
 title( titlestring );
-

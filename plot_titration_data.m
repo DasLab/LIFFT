@@ -1,6 +1,6 @@
 function plot_titration_data( data, resnum, conc, ...
-		    pred_fit, sigma_at_each_residue, lane_normalization, ...			      
-			      conc_fine, pred_fit_fine );
+                 pred_fit, sigma_at_each_residue, lane_normalization, ...                      
+                        conc_fine, pred_fit_fine );
 
 numres  = size( data,1 ); 
 numconc = size( data,2 ); 
@@ -21,7 +21,7 @@ plot_offset = 0.0;
 
 for j = 1:numconc
   plot( resnum, plot_offset*(j-1) + data(:,j), '.','color',colorcode(j,:),...
-	'markerfacecolor',colorcode(j,:));
+       'markerfacecolor',colorcode(j,:));
   hold on
 end
 plot( resnum, sigma_at_each_residue,'color', [0.5 0.5 0.5] );
@@ -54,7 +54,7 @@ colorcode = jet(numres);
 plot_offset = mean(mean(data));
 for i = 1:numres
   semilogx( conc, plot_offset*(i-1) + data(i,:), '.','color',colorcode(i,:),...
-	    'markerfacecolor',colorcode(i,:));
+           'markerfacecolor',colorcode(i,:));
   hold on
   plot( conc_fine, plot_offset*(i-1) + pred_fit_fine(i,:), '-','color',colorcode(i,:));
 
@@ -70,4 +70,3 @@ xlabel('[M^{2+} (mM)]');
 ylabel('Peak intensity');
 
 hold off
-

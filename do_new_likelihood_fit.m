@@ -1,3 +1,4 @@
+
 function  [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
     do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  );
 
@@ -15,7 +16,6 @@ if ~exist( 'C_state_in' )
   C_state_in = [];
 end
 
-%everything intialized at 1.  
 sigma_at_each_residue = ones( 1, numres );
 
 lane_normalization = ones( 1, numconc );
@@ -109,8 +109,7 @@ numres = size( data, 1);
 numconc = size( data, 2);
 
 % compute the coefficient for the Lagrange multiplier.
-for i = 2:numconc
-    
+for i = 1:numconc
   beta( i ) = 1 / sum( data(:,i) .* pred_fit(:,i) ./ sigma_at_each_residue.^2  );
   data2( i ) = sum( data(:,i) .* data(:,i) ./ sigma_at_each_residue.^2 );
 end
@@ -118,6 +117,5 @@ end
 lambda = sum( (beta .* data2) - 1 )/sum( beta );
 
 lane_normalization = ( data2 - lambda ) .* beta;
-
 
 
