@@ -15,6 +15,7 @@ if ~exist( 'C_state_in' )
   C_state_in = [];
 end
 
+%everything intialized at 1.  
 sigma_at_each_residue = ones( 1, numres );
 
 lane_normalization = ones( 1, numconc );
@@ -108,7 +109,8 @@ numres = size( data, 1);
 numconc = size( data, 2);
 
 % compute the coefficient for the Lagrange multiplier.
-for i = 1:numconc
+for i = 2:numconc
+    
   beta( i ) = 1 / sum( data(:,i) .* pred_fit(:,i) ./ sigma_at_each_residue.^2  );
   data2( i ) = sum( data(:,i) .* data(:,i) ./ sigma_at_each_residue.^2 );
 end

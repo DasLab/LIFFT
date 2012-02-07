@@ -62,7 +62,7 @@ log_L = zeros( length( param1 ), length( param2 ) );
 sigma_all = zeros( size(input_data,1)+1, length( param1 ), length( param2 ) );
 for i = 1: length( param1)
   fprintf(1,'Doing with loop %d out of %d...\n', i, length( param1) );
-  if exist( 'parfor' )
+   if exist( 'parfor' )
     parfor j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
 							input_data, conc, fit_type, [], C_state_in );
@@ -118,11 +118,21 @@ fprintf( [titlestring,'\n'] )
 p1_s = [p1_best p1_high-p1_best p1_best - p1_low ];
 p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 
+data_renorm = input_data * diag(lane_normalization);
+C_state1 = ones(size(input_data,2),1)*C_state(1,:);
+C_state2 = ones(size(input_data,2),1)*C_state(2,:);
+input_data_rescale = (data_renorm - C_state1')./(C_state2'-C_state1');
+
+
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
 conc_fine = 10.^[min(log_10_conc):0.01:max(log_10_conc)];
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
+
+C_state1 = ones(size(pred_fit_fine,2),1)*C_state(1,:);
+C_state2 = ones(size(pred_fit_fine,2),1)*C_state(2,:);
+pred_fit_fine_rescale = (pred_fit_fine - C_state1')./(C_state2'-C_state1');
 
 % Make a pretty plot.
 figure(1)
@@ -199,7 +209,8 @@ log_L_cutoff = log_L_max - 2.0;
 p_low = param( min_idx );
 if ( min_idx > 1 )
   idx = min_idx-1;
-  while (idx > 1 & log_L(idx) < log_L( idx+1) )
+%    while (idx > 1 & log_L(idx) < log_L( idx+1) )
+   while (idx > 1 )
     idx = idx - 1;  
   end
   %p_low = param( idx+1 );

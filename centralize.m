@@ -19,8 +19,8 @@ for i  = 2:size( data, 2 )
   logshift = log( abs(data(:,i))./abs(data(:,refcol)) )/log(2);
 
   % remove anything crazy
-  logshift = logshift( find( ~isnan(logshift) & ~isinf( logshift) ) );
-  
+   logshift = logshift( find( ~isnan(logshift) & ~isinf( logshift) ) );
+%   logshift = log( abs(data(:,i))) /log(2);
   if PLOTSTUFF
     h = hist( logshift, r );
     plot( r, h+10*i, 'color', colorcode(i,:) ); hold on
