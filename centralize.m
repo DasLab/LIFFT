@@ -15,7 +15,7 @@ data_center(:,refcol) = data(:,refcol);
 
 if PLOTSTUFF; colorcode = jet( size( data, 2 ) ); r = [-5:0.1:5]; clf; end;
 
-for i  = 2:size( data, 2 )
+for i  = 1:size( data, 2 )
   logshift = log( abs(data(:,i))./abs(data(:,refcol)) )/log(2);
 
   % remove anything crazy

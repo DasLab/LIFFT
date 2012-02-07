@@ -1,4 +1,4 @@
-function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
+function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, p1_s, p2_s ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
 %  log_L  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
 %
 % Likelihood-based analysis of structure mapping titration -- optimizes lane normalizaton and calculates
@@ -209,8 +209,8 @@ log_L_cutoff = log_L_max - 2.0;
 p_low = param( min_idx );
 if ( min_idx > 1 )
   idx = min_idx-1;
-%    while (idx > 1 & log_L(idx) < log_L( idx+1) )
-   while (idx > 1 )
+    while (idx > 1 & log_L(idx) < log_L( idx+1) )
+%    while (idx > 1 )
     idx = idx - 1;  
   end
   %p_low = param( idx+1 );
