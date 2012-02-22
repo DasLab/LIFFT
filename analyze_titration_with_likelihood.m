@@ -65,12 +65,12 @@ for i = 1: length( param1)
   if exist( 'parfor' )
     parfor j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
-                            input_data, conc, fit_type, [], C_state_in );
+							input_data, conc, fit_type, [], C_state_in );
     end
   else
     for j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
-                            input_data, conc, fit_type, [], C_state_in );
+							input_data, conc, fit_type, [], C_state_in );
     end
   end
 end
@@ -89,8 +89,13 @@ p2_best = param2(ind2);
 fprintf( 'Optimizing further to find local minimum... \n' );
 % originally tried fminbound, but that doesn't work for 2D
 %p_fminbnd = fminbnd(  'do_new_likelihood_fit_wrapper_for_fminbnd', [param1(ind1-1) param2(ind2-1)], [param1(ind1+1),param2(ind2+1)], [], input_data, conc, fit_type, [], C_state_in );
-[p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, [], C_state_in );
-p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
+if length( param2 ) > 1
+  [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, [], C_state_in );
+  p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
+else
+  [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, [], C_state_in, p2_best );
+  p1_best = p_fminbnd(1);
+end
 log_L_best = -minus_log_L_best;
 
 %fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1_best, p2_name, p2_best, log_L_best);
@@ -118,22 +123,11 @@ fprintf( [titlestring,'\n'] )
 p1_s = [p1_best p1_high-p1_best p1_best - p1_low ];
 p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 
-data_renorm = input_data * diag(lane_normalization);
-C_state1 = ones(size(input_data,2),1)*C_state(1,:);
-C_state2 = ones(size(input_data,2),1)*C_state(2,:);
-input_data_rescale = (data_renorm - C_state1')./(C_state2'-C_state1');
-
-
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
 conc_fine = 10.^[min(log_10_conc):0.01:max(log_10_conc)];
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
-
-
-C_state1 = ones(size(pred_fit_fine,2),1)*C_state(1,:);
-C_state2 = ones(size(pred_fit_fine,2),1)*C_state(2,:);
-pred_fit_fine_rescale = (pred_fit_fine - C_state1')./(C_state2'-C_state1');
 
 % Make a pretty plot.
 figure(1)
@@ -156,16 +150,16 @@ subplot(1,3,1);
 normfactor = mean(mean( input_data ) )/40;
 data_lane_norm = input_data*diag(lane_normalization);
 image( data_lane_norm/normfactor ); title( 'input data' )
-set(gca,'linew',2,'fontsize',14,'fontw','bold');
+set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
 
 subplot(1,3,2);
 image( pred_fit/normfactor ); title( 'fits' )
-set(gca,'linew',2,'fontsize',14,'fontw','bold');
+set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
 
 subplot(1,3,3);
 image( abs( pred_fit - data_lane_norm)/normfactor ); title( 'abs(residuals)' )
 colormap( 1 - gray(100) );
-set(gca,'linew',2,'fontsize',14,'fontw','bold');
+set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
 set(gcf, 'PaperPositionMode','auto','color','white');
 
 
@@ -231,7 +225,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [logL, sigma_vector] = run_inner_loop( p1, p2, ...
-                           input_data, conc, fit_type, lane_normalization_in, C_state_in )
+						input_data, conc, fit_type, lane_normalization_in, C_state_in )
 
 %p1 = param1( i );
 % p2 = param2( j );
@@ -278,3 +272,4 @@ legend( num2str( plot_res' ), 4 )
 xlabel( 'Concentration' ); ylabel( 'Fraction transition' );
 set(gcf, 'PaperPositionMode','auto','color','white');
 title( titlestring );
+
