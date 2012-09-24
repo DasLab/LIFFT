@@ -11,7 +11,8 @@ f = feval( fit_type, conc, K1, n );
 numres = size( data, 1 );
 numconc = size( data, 2);
 
-numiter = 2; % this seems to converge fast.
+numiter = 5; % this seems to converge fast.
+
 if ~exist( 'C_state_in' )
   C_state_in = [];
 end

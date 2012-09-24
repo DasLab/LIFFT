@@ -1,5 +1,5 @@
-function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
-%  log_L  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
+function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine )
+%  [p1_best, p2_best, log_L]  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
 %
 % Likelihood-based analysis of structure mapping titration -- optimizes lane normalizaton and calculates
 %  errors at each residue while doing a grid search over midpoints and apparent Hill coefficients.
@@ -43,6 +43,7 @@ if exist( 'whichres' ) & ~isempty( whichres )
 end
 if ~exist( 'fit_type' ); fit_type = 'hill'; end;
 if ~exist( 'C_state_in' ); C_state_in = []; end;
+if ( size( C_state_in, 1 ) == 1 ); C_state_in = input_data( :, C_state_in )'; end;
 
 log_L_best = -99999999999;
 p1_best = 999;
@@ -125,7 +126,7 @@ p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
-conc_fine = 10.^[min(log_10_conc):0.01:max(log_10_conc)];
+if ~exist( 'conc_fine') conc_fine = 10.^[min(log_10_conc):0.01:max(log_10_conc)]; end;
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
 
@@ -164,7 +165,9 @@ set(gcf, 'PaperPositionMode','auto','color','white');
 
 
 % If user has specified 'plot_res' make a plot specifically focused on the data at those residues.
-if length( plot_res ) > 0; make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring ); end;
+input_data_rescale = []; pred_fit_fine_rescale = [];
+
+if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring ); end;
 
 
 
@@ -249,7 +252,7 @@ sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 %    pause;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring ); 
+function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring ); 
 
 data_renorm = input_data * diag(lane_normalization);
 
@@ -257,8 +260,8 @@ figure(5); clf;
 colorcode = jet( length( plot_res ) );
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
-  input_data_rescale = (data_renorm(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
-  semilogx( conc, input_data_rescale, 'o', 'color', colorcode(m,:), 'markerfacecolor',colorcode(m,:) ); hold on;
+  input_data_rescale(:,m) = (data_renorm(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+  semilogx( conc, input_data_rescale(:,m), 'o', 'color', colorcode(m,:), 'markerfacecolor',colorcode(m,:) ); hold on;
 end
 
 for m = 1:length( plot_res )
