@@ -76,6 +76,7 @@ for i = 1: length( param1)
   end
 end
 
+
 t = toc;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,8 +115,8 @@ if ( length( param1 ) > 1 & length( param2 ) > 1 )
  [p1_low,p1_high] = get_1D_error( param1, max(log_L') );
  [p2_low,p2_high] = get_1D_error( param2, max(log_L ) );
 else
- [p1_low,p1_high] = get_1D_error( param1, log_L );
- [p2_low,p2_high] = get_1D_error( param2, log_L );
+ [p1_low,p1_high] = get_1D_error( param1, log_L, p1_best, log_L_best );
+ [p2_low,p2_high] = get_1D_error( param2, log_L, p1_best, log_L_best );
 end
 titlestring = sprintf( '%s = %6.4f + %6.4f - %6.4f\n', p1_name, p1_best, p1_high-p1_best, p1_best - p1_low );
 titlestring = [titlestring, sprintf( '%s = %4.2f + %4.2f - %4.2f', p2_name, p2_best, p2_high - p2_best, p2_best - p2_low ) ];
@@ -126,7 +127,7 @@ p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
-if ~exist( 'conc_fine') conc_fine = 10.^[min(log_10_conc):0.01:max(log_10_conc)]; end;
+if ~exist( 'conc_fine') conc_fine = 10.^[(min(log_10_conc)-0.5) : 0.01 : (max(log_10_conc)+0.5) ]; end;
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
 
@@ -186,42 +187,40 @@ end
 
 % if user has specified additional point (e.g., best point), stick it into param vector
 % this is experimental, and leads to an artefact in 2D scans.
-if exist( 'p_best') & exist( 'L_best' )
+if exist( 'p_best', 'var' ) & exist( 'log_L_best', 'var' )
   insert_pos = 1;
-  while param(insert_pos )<p_best; insert_pos = insert_pos+1; end;
+  while param( insert_pos ) < p_best; insert_pos = insert_pos+1; end;
   
   %clf; plot( param, log_L, 'ko-' ); hold on
-
   param = [ param( [1:(insert_pos-1)] ), p_best    , param( [insert_pos:end]) ];
-  log_L = [ log_L( [1:(insert_pos-1)] ), log_L_best, log_L( [insert_pos:end]) ];
+  log_L = [ log_L( [1:(insert_pos-1)] )', log_L_best, log_L( [insert_pos:end])' ]';
 
   %plot( param, log_L, 'ro-' ); hold off; pause;
 end
 
-[ log_L_max, min_idx ] = max( log_L );
-param( min_idx );
-
+[ log_L_max, max_idx ] = max( log_L );
+param( max_idx );
 
 log_L_cutoff = log_L_max - 2.0;
 
-p_low = param( min_idx );
-if ( min_idx > 1 )
-  idx = min_idx-1;
+p_low = param( max_idx );
+if ( max_idx > 1 )
+  idx = max_idx-1;
   while (idx > 1 & log_L(idx) < log_L( idx+1) )
     idx = idx - 1;  
   end
   %p_low = param( idx+1 );
-  p_low = interp1( log_L( idx: min_idx ), param( [idx : min_idx] ), log_L_cutoff );
+  p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'cubic',NaN );
 end
 
-p_high = param( min_idx );
-if ( min_idx < length( param ) )
-  idx = min_idx+1;
+p_high = param( max_idx );
+if ( max_idx < length( param ) )
+  idx = max_idx+1;
   while (idx < length(param) & log_L(idx) < log_L( idx-1 ) )
     idx = idx + 1;  
   end
   %p_high = param( idx-1 );
-  p_high = interp1( log_L( min_idx:idx ), param( [min_idx:idx] ), log_L_cutoff );
+  p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'cubic',NaN );
 end
 
 
@@ -258,6 +257,9 @@ data_renorm = input_data * diag(lane_normalization);
 
 figure(5); clf;
 colorcode = jet( length( plot_res ) );
+% don't allow pure yellow or light green!
+colorcode(:,2) = colorcode(:,2)/2;
+
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
   input_data_rescale(:,m) = (data_renorm(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
@@ -273,6 +275,7 @@ hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
 legend( num2str( plot_res' ), 4 )
 xlabel( 'Concentration' ); ylabel( 'Fraction transition' );
+xlim( [min( conc_fine ) max( conc_fine ) ] );
 set(gcf, 'PaperPositionMode','auto','color','white');
 title( titlestring );
 
