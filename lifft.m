@@ -1,7 +1,9 @@
-function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine )
-%  [p1_best, p2_best, log_L]  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, param2, whichres, fit_type, C_state_in, plot_res, do_centralize )
+function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine )
+%  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine );
 %
-% Likelihood-based analysis of structure mapping titration -- optimizes lane normalizaton and calculates
+% LIFFT: Likelihood-informed Fits of Footprinting Titraions
+%
+% Optimizes lane normalizaton and calculates
 %  errors at each residue while doing a grid search over midpoints and apparent Hill coefficients.
 %
 %  Inputs:
@@ -17,7 +19,7 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %  plot_res   = which residues, if any, to make a 'nice' Hill plot with.  
 %  do_centralize = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 1, i.e., true)
 %
-% (C) Das lab, Stanford University, 2008-2012
+% (C) Das lab, Stanford University, 2008-2014
 % 
 
 % initialization stuff
@@ -127,7 +129,13 @@ p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
-if ~exist( 'conc_fine') conc_fine = 10.^[(min(log_10_conc)-0.5) : 0.01 : (max(log_10_conc)+0.5) ]; end;
+if ~exist( 'conc_fine') | isempty( conc_fine ) 
+  if fit_type == 'melt';
+    conc_fine = [-10:0.5:110];
+  else
+    conc_fine = 10.^[(min(log_10_conc)-0.5) : 0.01 : (max(log_10_conc)+0.5) ]; 
+  end
+end;
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
 
@@ -168,7 +176,7 @@ set(gcf, 'PaperPositionMode','auto','color','white');
 % If user has specified 'plot_res' make a plot specifically focused on the data at those residues.
 input_data_rescale = []; pred_fit_fine_rescale = [];
 
-if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring ); end;
+if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, fit_type ); end;
 
 
 
@@ -251,7 +259,7 @@ sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 %    pause;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring ); 
+function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring, fit_type ); 
 
 data_renorm = input_data * diag(lane_normalization);
 
@@ -274,7 +282,12 @@ end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
 legend( num2str( plot_res' ), 4 )
-xlabel( 'Concentration' ); ylabel( 'Fraction transition' );
+set(gca,'xscale','log');
+if ( fit_type == 'melt' ) 
+  variable_parameter_name = 'Temperature'; 
+set(gca,'xscale','lin');
+end;
+xlabel( variable_parameter_name ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
 set(gcf, 'PaperPositionMode','auto','color','white');
 title( titlestring );
