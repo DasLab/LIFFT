@@ -1,6 +1,7 @@
-function [f, p1_name, p2_name ] = melt( temperatures, Tm, delH );
+function [f, p1_name, p2_name, variable_parameter_name ] = melt( temperatures, Tm, delH );
 p1_name = 'Tm';
 p2_name = 'delta-H';
+variable_parameter_name = 'temperature';
 R = 0.001986; % kcal/mol/K
 
 % convert celsius to K
