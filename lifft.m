@@ -151,7 +151,7 @@ title( titlestring );
 
 % Make some more pretty plots.
 figure(2)
-plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine );
+plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
 title( titlestring );
 
 % plot fits and residuals as 'gray plots' too.
@@ -271,7 +271,7 @@ colorcode(:,2) = colorcode(:,2)/2;
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
   input_data_rescale(:,m) = (data_renorm(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
-  semilogx( conc, input_data_rescale(:,m), 'o', 'color', colorcode(m,:), 'markerfacecolor',colorcode(m,:) ); hold on;
+  plot( conc, input_data_rescale(:,m), 'o', 'color', colorcode(m,:), 'markerfacecolor',colorcode(m,:) ); hold on;
 end
 
 for m = 1:length( plot_res )
@@ -282,10 +282,11 @@ end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
 legend( num2str( plot_res' ), 4 )
-set(gca,'xscale','log');
 if ( fit_type == 'melt' ) 
   variable_parameter_name = 'Temperature'; 
-set(gca,'xscale','lin');
+  set(gca,'xscale','lin');
+else
+  set(gca,'xscale','log');
 end;
 xlabel( variable_parameter_name ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
