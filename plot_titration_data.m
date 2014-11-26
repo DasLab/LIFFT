@@ -1,6 +1,8 @@
 function plot_titration_data( data, resnum, conc, ...
                  pred_fit, sigma_at_each_residue, lane_normalization, ...                      
-                        conc_fine, pred_fit_fine );
+                        conc_fine, pred_fit_fine, fit_type );
+
+if ~exist( 'fit_type' ) fit_type = 'hill'; end;
 
 numres  = size( data,1 ); 
 numconc = size( data,2 ); 
@@ -53,7 +55,7 @@ figure(3)
 colorcode = jet(numres);
 plot_offset = mean(mean(data));
 for i = 1:numres
-  semilogx( conc, plot_offset*(i-1) + data(i,:), '.','color',colorcode(i,:),...
+  plot( conc, plot_offset*(i-1) + data(i,:), '.','color',colorcode(i,:),...
            'markerfacecolor',colorcode(i,:));
   hold on
   plot( conc_fine, plot_offset*(i-1) + pred_fit_fine(i,:), '-','color',colorcode(i,:));
@@ -61,6 +63,11 @@ for i = 1:numres
   startpt = max(find(conc>0));
   h = text( conc(startpt), plot_offset*(i-1)+pred_fit(i,startpt), num2str( resnum( i ) ) );
   set(h,'color','k','fontsize',8,'fontweight','bold');
+end
+if (fit_type == 'melt' )
+  set(gca,'xscale','lin');
+else
+  set(gca,'xscale','log');
 end
 ylim2 = [0 (numres+1)*plot_offset+max(max(data))];
 if ( size( pred_fit, 1 )== 1  ) ylim2 = [min( data) max(data) ]; end;
