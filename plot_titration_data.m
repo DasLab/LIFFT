@@ -73,7 +73,11 @@ ylim2 = [0 (numres+1)*plot_offset+max(max(data))];
 if ( size( pred_fit, 1 )== 1  ) ylim2 = [min( data) max(data) ]; end;
 set(gca,'ylim',ylim2,'xlim',[ min(conc) max(conc) ])
 set(gca,'linew',2,'fontsize',14,'fontw','bold');
-xlabel('[M^{2+} (mM)]');
+if ( fit_type == 'melt' )
+  xlabel('Temperature (C)');
+else
+  xlabel('Conc. (mM)]');
+end
 ylabel('Peak intensity');
 
 hold off
