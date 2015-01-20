@@ -72,7 +72,7 @@ if exist( 'C_in' ) & ~isempty( C_in ) & JUST_SCALE_CIN
 else
     C = zeros(num_states, numres);
     for m = 1:numres
-        C(:,m) = robustfit(f'/sigma_at_each_residue(m), data_renorm(m, :)/sigma_at_each_residue(m), 'fair', 1.345, 'off');
+        C(:,m) = robustfit(f', data_renorm(m, :), 'fair', 1.345, 'off');
     end
   
   
