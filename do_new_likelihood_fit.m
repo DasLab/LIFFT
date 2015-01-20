@@ -70,22 +70,10 @@ if exist( 'C_in' ) & ~isempty( C_in ) & JUST_SCALE_CIN
   C = diag(kappa) * C_in;
 
 else
-   C = zeros(num_states, numres);
-   A = f * f';
-   % reactivity of each state.
-   B =  data_renorm*f';
- 
-   if exist( 'C_in' ) & ~isempty( C_in )
-     A = A + beta;
-     B = B + beta * C_in';
-   end
-   
-   %C = A\B';
-   % to enforce that C is positive...
-   for m = 1:size( B, 1 );
-     C(:,m) = lsqnonneg( A/sigma_at_each_residue(m), (B(m,:)')/sigma_at_each_residue(m) );
-   end
-    
+    C = zeros(num_states, numres);
+    for m = 1:numres
+        C(:,m) = robustfit(f', data_renorm(m, :), 'fair', 1.345, 'off');
+    end
   
   
 end

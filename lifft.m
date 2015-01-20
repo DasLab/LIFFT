@@ -161,16 +161,22 @@ normfactor = mean(mean( input_data ) )/40;
 data_lane_norm = input_data*diag(lane_normalization);
 image( data_lane_norm/normfactor ); title( 'input data' )
 set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
+set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+xticklabel_rotate
 
 
 subplot(1,3,2);
 image( pred_fit/normfactor ); title( 'fits' )
 set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
+set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+xticklabel_rotate
 
 subplot(1,3,3);
 image( abs( pred_fit - data_lane_norm)/normfactor ); title( 'abs(residuals)' )
 colormap( 1 - gray(100) );
 set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
+set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+xticklabel_rotate
 set(gcf, 'PaperPositionMode','auto','color','white');
 
 
