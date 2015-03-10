@@ -1,6 +1,6 @@
 
 function  [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
-    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  );
+    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  )
 
 if ~exist( 'fit_type' ); fit_type = 'hill'; end;
 
@@ -11,7 +11,7 @@ f = feval( fit_type, conc, K1, n );
 numres = size( data, 1 );
 numconc = size( data, 2);
 
-numiter = 5; % this seems to converge fast.
+numiter = 10; % this seems to converge fast.
 
 if ~exist( 'C_state_in' )
   C_state_in = [];
@@ -70,21 +70,12 @@ if exist( 'C_in' ) & ~isempty( C_in ) & JUST_SCALE_CIN
   C = diag(kappa) * C_in;
 
 else
-  A = f * f';
-  % reactivity of each state.
-  B =  data_renorm*f';
-
-  if exist( 'C_in' ) & ~isempty( C_in )
-    A = A + beta;
-    B = B + beta * C_in';
-  end
+    C = zeros(num_states, numres);
+    for m = 1:numres
+        C(:,m) = robustfit(f', data_renorm(m, :), 'fair', 1.345, 'off');
+    end
   
-  C = A\B';
   
-  % to enforce that C is positive...
-  %for m = 1:size( B, 1 );
-  %  C(:,m) = lsqnonneg( A, B(m,:)' );
-  %end
 end
 
 pred_fit = C' * f;
