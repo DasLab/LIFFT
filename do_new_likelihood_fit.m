@@ -39,6 +39,13 @@ logL = - numconc * sum( log( sigma_at_each_residue ) );
 
 if exist( 'C_in' ) logL = logL - beta_C * sum( sum( (( C_in - C_state ) * diag( 1./sigma_normalization)).^2 ) ); end;
 
+BASELINE_PRIOR = 1;
+if BASELINE_PRIOR
+  BASELINE_DEV = 0.05;
+  logL = logL +  0.5 * ( f(1,1)   - 1).^2 /BASELINE_DEV^2;
+  logL = logL +  0.5 * ( f(1,end) - 0).^2 /BASELINE_DEV^2;
+end
+
 lane_normalization = 1./lane_normalization;
 
 return;
@@ -56,6 +63,7 @@ num_states = size( f, 1 );
 data_renorm = data * diag( lane_normalization );
 
 JUST_SCALE_CIN = 0;
+ROBUST_FIT = 0;
 if exist( 'C_in' ) & ~isempty( C_in ) & JUST_SCALE_CIN
 
   % this is a special case -- we 'know' what the states look like, and just
@@ -69,12 +77,29 @@ if exist( 'C_in' ) & ~isempty( C_in ) & JUST_SCALE_CIN
 
   C = diag(kappa) * C_in;
 
+elseif ROBUST_FIT
+
+  C = zeros(num_states, numres);
+  for m = 1:numres
+    C(:,m) = robustfit(f', data_renorm(m, :), 'fair', 1.345, 'off');
+  end
+
 else
-    C = zeros(num_states, numres);
-    for m = 1:numres
-        C(:,m) = robustfit(f', data_renorm(m, :), 'fair', 1.345, 'off');
-    end
-  
+  A = f * f';
+  % reactivity of each state.
+  B =  data_renorm*f';
+
+  if exist( 'C_in' ) & ~isempty( C_in )
+    A = A + beta;
+    B = B + beta * C_in';
+  end
+   
+  C = A\B';
+   
+  % to enforce that C is positive...
+  %for m = 1:size( B, 1 );
+  %  C(:,m) = lsqnonneg( A, B(m,:)' );
+  %end
   
 end
 

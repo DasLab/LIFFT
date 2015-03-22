@@ -52,3 +52,4 @@ else
   if ~isempty( p_best ); x_best = log( p_best )/log(10); end;
 end
 
+colormap( jet )
