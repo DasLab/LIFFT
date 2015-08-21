@@ -2,7 +2,11 @@ function [Tm, delH ] = fit_optical_melt( infile )
 
 if exist( infile, 'dir' )
   files = dir( [infile,'/*.txt'] );
-  for i = 1:length( files ); [Tm(i), delH(i) ] = fit_optical_melt( strcat(infile, '/', files(i).name) ); end;
+  fileID = fopen(strcat(infile, '.txt'), 'w');
+  for i = 1:length( files )
+    [Tm(i), delH(i) ] = fit_optical_melt( strcat(infile, '/', files(i).name) );
+    fprintf(fileID, '%s\t%f\t%f\n', files(i).name, Tm(i), delH(i));
+  end
   return;
 end
 
