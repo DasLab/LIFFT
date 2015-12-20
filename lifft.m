@@ -80,8 +80,6 @@ for i = 1: length( param1)
 end
 
 
-
-
 t = toc;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,19 +90,21 @@ log_L_best = max(max(log_L));
 p1_best = param1(ind1);
 p2_best = param2(ind2);
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf( 'Optimizing further to find local minimum... \n' );
+OPTIMIZE_MINIMUM = 1;
+if OPTIMIZE_MINIMUM
+  fprintf( 'Optimizing further to find local minimum... \n' );
 % originally tried fminbound, but that doesn't work for 2D
 %p_fminbnd = fminbnd(  'do_new_likelihood_fit_wrapper_for_fminbnd', [param1(ind1-1) param2(ind2-1)], [param1(ind1+1),param2(ind2+1)], [], input_data, conc, fit_type, [], C_state_in );
-if length( param2 ) > 1
-  [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, [], C_state_in );
-  p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
-else
-  [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, [], C_state_in, p2_best );
-  p1_best = p_fminbnd(1);
-end
+  if length( param2 ) > 1
+    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, [], C_state_in );
+    p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
+  else
+    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, [], C_state_in, p2_best );
+    p1_best = p_fminbnd(1);
+  end
 log_L_best = -minus_log_L_best;
+end
 
 %fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1_best, p2_name, p2_best, log_L_best);
 
@@ -134,8 +134,8 @@ p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
 if ~exist( 'conc_fine') | isempty( conc_fine ) 
-  if fit_type == 'melt';
-    conc_fine = [-10:0.5:110];
+  if ~isempty( strfind( fit_type, 'melt' ) )
+      conc_fine = [-10:0.5:110];
   else
     conc_fine = 10.^[(min(log_10_conc)-0.5) : 0.01 : (max(log_10_conc)+0.5) ]; 
   end
@@ -147,9 +147,10 @@ pred_fit_fine = C_state'*f;
 figure(1)
 clf
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
-make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
+  make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
-  semilogx( param1, log_L );
+  plot( param1, log_L );
+  xlabel( set_xscale( fit_type ) );
 end
 title( titlestring );
 
@@ -228,8 +229,11 @@ if ( max_idx > 1 )
   while (idx > 1 & log_L(idx) < log_L( idx+1) )
     idx = idx - 1;  
   end
-  %p_low = param( idx+1 );
-  p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'cubic',NaN );
+  if ( (max_idx-idx) < 3 )
+    p_low = param( idx+1 );
+  else
+    p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'cubic',NaN );
+  end
 end
 
 p_high = param( max_idx );
@@ -238,8 +242,11 @@ if ( max_idx < length( param ) )
   while (idx < length(param) & log_L(idx) < log_L( idx-1 ) )
     idx = idx + 1;  
   end
-  %p_high = param( idx-1 );
-  p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'cubic',NaN );
+  if ( (idx - max_idx) < 3 )
+    p_high = param( idx-1 );
+  else
+    p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'cubic',NaN );
+  end
 end
 
 
@@ -264,29 +271,50 @@ colorcode = jet( length( plot_res ) );
 % don't allow pure yellow or light green!
 colorcode(:,2) = colorcode(:,2)/2;
 
+[profile_state1, profile_state2] = get_profiles_vs_conc( C_state, conc );
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
-  input_data_rescale(:,m) = (data_renorm(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+  input_data_rescale(:,m) = (data_renorm(i,:) - profile_state1(i,:) )./(profile_state2(i,:)-profile_state1(i,:));
   plot( conc, input_data_rescale(:,m), 'o', 'color', colorcode(m,:), 'markerfacecolor',colorcode(m,:) ); hold on;
 end
 
+[profile_state1_fine, profile_state2_fine] = get_profiles_vs_conc( C_state, conc_fine );
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
-  pred_fit_fine_rescale = (pred_fit_fine(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+  pred_fit_fine_rescale = (pred_fit_fine(i,:) - profile_state1_fine(i,:))./(profile_state2_fine(i,:)-profile_state1_fine(i,:));
   plot( conc_fine, pred_fit_fine_rescale, '-', 'color', colorcode(m,: ), 'linew',2 );     
 end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
 legend( num2str( plot_res' ), 4 )
-if ( fit_type == 'melt' ) 
+xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
+xlim( [min( conc_fine ) max( conc_fine ) ] );
+ylim( [-0.5 1.5] );
+set(gcf, 'PaperPositionMode','auto','color','white');
+title( titlestring );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function variable_parameter_name = set_xscale( fit_type );
+if ( ~isempty( strcmp( fit_type, 'melt' ) ) )
+  %temperature melts are linear in x
   variable_parameter_name = 'Temperature'; 
   set(gca,'xscale','lin');
 else
   variable_parameter_name = 'Concentration';
   set(gca,'xscale','log');
 end;
-xlabel( variable_parameter_name ); ylabel( 'Fraction transition' );
-xlim( [min( conc_fine ) max( conc_fine ) ] );
-set(gcf, 'PaperPositionMode','auto','color','white');
-title( titlestring );
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% generally the state profiles are assumed to be indenpendent of solution condition
+% or temperature (as stored in conc), but there's an exception in melt_with_lineary_baseline.
+function [profile_state1, profile_state2 ] = get_profiles_vs_conc( C_state, conc );
+
+profile_state1 = C_state(1,:)'*ones(1,length(conc));
+profile_state2 = C_state(2,:)'*ones(1,length(conc));
+
+if size( C_state, 1 ) > 2
+  assert( size( C_state, 1 ) == 4 ); 
+  % last components of C_state encode proportionality constants for linear baseline.
+  profile_state1 = profile_state1 + C_state(3,:)'*conc;
+  profile_state2 = profile_state2 + C_state(4,:)'*conc;
+end

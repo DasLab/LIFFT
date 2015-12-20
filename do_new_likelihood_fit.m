@@ -26,14 +26,14 @@ SIGMIN_FRAC = 0.1;
 for n = 1:numiter
 
   [pred_fit, C_state ] = do_linear_fit_vs_conc( data, f, lane_normalization, C_state_in, sigma_at_each_residue, beta_C );
-
+  
   sigma_at_each_residue = get_sigma_at_each_residue( data, pred_fit, lane_normalization, SIGMIN_FRAC );
-
+  
   if ( n < numiter )
     lane_normalization = normalize_lanes( data, pred_fit, sigma_at_each_residue );
   end
 
-  end
+end
 
 logL = - numconc * sum( log( sigma_at_each_residue ) );
 
@@ -95,7 +95,7 @@ else
   end
    
   C = A\B';
-   
+
   % to enforce that C is positive...
   %for m = 1:size( B, 1 );
   %  C(:,m) = lsqnonneg( A, B(m,:)' );
