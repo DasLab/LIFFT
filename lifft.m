@@ -62,21 +62,24 @@ if exist( 'matlabpool');  if matlabpool( 'size' ) == 0 ;   res = findResource; m
 % MAIN LOOP! Grid search. Good stuff is inside run_inner_loop
 % Will run in parallel ('parfor') if user has parallelization toolbox.
 log_L = zeros( length( param1 ), length( param2 ) );
+log_L2 = zeros( length( param1 ), length( param2 ) );
 sigma_all = zeros( size(input_data,1)+1, length( param1 ), length( param2 ) );
 for i = 1: length( param1)
-  fprintf(1,'Doing with loop %d out of %d...\n', i, length( param1) );
+  fprintf(1,'Doing loop %d out of %d...\n', i, length( param1) );
   if exist( 'parfor' )
     parfor j = 1: length( param2) % this could be parallelized for speed..
-      [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
-							input_data, conc, fit_type, [], C_state_in );
+      [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2( j ),...
+						  input_data, conc, fit_type, [], C_state_in );
     end
   else
     for j = 1: length( param2) % this could be parallelized for speed..
-      [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2(j),...
-							input_data, conc, fit_type, [], C_state_in );
+      [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2( j ),...
+						  input_data, conc, fit_type, [], C_state_in );
     end
   end
 end
+
+
 
 
 t = toc;
@@ -84,10 +87,11 @@ t = toc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Maximum likelihood point.
 % maybe this should be replaced by a local minimum finder?
-log_L_best = max(log_L(:));
+log_L_best = max(max(log_L));
 [ind1, ind2] = find(log_L == log_L_best);
 p1_best = param1(ind1);
 p2_best = param2(ind2);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf( 'Optimizing further to find local minimum... \n' );
@@ -243,27 +247,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [logL, sigma_vector] = run_inner_loop( p1, p2, ...
 						input_data, conc, fit_type, lane_normalization_in, C_state_in )
-
-%p1 = param1( i );
-% p2 = param2( j );
     
 [logL, pred_fit, lane_normalization, sigma_at_each_residue] = ...
     do_new_likelihood_fit( input_data, conc, p1, p2, fit_type, lane_normalization_in, C_state_in );
 
-%log_L(i,j) = logL;
 sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 
-%      fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1, p2_name, p2, log_L(i,j));
-%     
-%     if (log_L(i,j) > log_L_best)
-%       log_L_best = log_L(i,j);
-%       p1_best = p1;
-%       p2_best = p2;
-%     end
-
-%    sigma_at_each_residue'
-%    plot_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue );
-%    pause;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring, fit_type ); 
