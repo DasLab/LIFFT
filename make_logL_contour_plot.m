@@ -1,4 +1,5 @@
 function make_logL_contour_plot( logLout, param1, param2, param1_name, param2_name, p1_best, p2_best )
+% make_logL_contour_plot( logLout, param1, param2, param1_name, param2_name, p1_best, p2_best )
 
 if ~exist( 'param1_name' ); param1_name = 'K'; end;
 if ~exist( 'param2_name' ); param2_name = 'n_{Hill}'; end;

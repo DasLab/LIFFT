@@ -64,7 +64,7 @@ for i = 1:numres
   h = text( conc(startpt), plot_offset*(i-1)+pred_fit(i,startpt), num2str( resnum( i ) ) );
   set(h,'color','k','fontsize',8,'fontweight','bold');
 end
-if (fit_type == 'melt' )
+if ~isempty( strfind( fit_type, 'melt' ) )
   set(gca,'xscale','lin');
 else
   set(gca,'xscale','log');
@@ -73,7 +73,7 @@ ylim2 = [0 (numres+1)*plot_offset+max(max(data))];
 if ( size( pred_fit, 1 )== 1  ) ylim2 = [min( data) max(data) ]; end;
 set(gca,'ylim',ylim2,'xlim',[ min(conc) max(conc) ])
 set(gca,'linew',2,'fontsize',14,'fontw','bold');
-if ( fit_type == 'melt' )
+if ~isempty( strfind( fit_type, 'melt' ) )
   xlabel('Temperature (C)');
 else
   xlabel('Conc. (mM)]');

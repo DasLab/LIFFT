@@ -1,5 +1,5 @@
-function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine )
-%  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine );
+function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization )
+%  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization );
 %
 % LIFFT: Likelihood-informed Fits of Footprinting Titraions
 %
@@ -7,19 +7,35 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %  errors at each residue while doing a grid search over midpoints and apparent Hill coefficients.
 %
 %  Inputs:
+%
 %  input_data = matrix of input structure mapping data, approximately normalized (e.g., by mean intensity in each lane)
 %                 must have dimensions of (number of residues x number of lanes ).
-%  conc       = concentration of chemical in titration (e.g., [adenine], or [Mg2+] )
+%  conc       = concentration of chemical in titration (e.g., [adenine], or [Mg2+] ), or temperature (in C, for melts).
 %  resnum     = your favorite numbering of residues  (if you give empty set [], you'll get 1:number of columns in input_data )
-%  K1_conc    = concentrations to search over. (Default: 10.^[-3.0 : 0.1 :3.0]).
-%  param2     = apparent Hill coefficients to search over. (Default: param2 = [0.05:0.05:4] )
+%  param1     = parameter 1 values (e.g., concentrations) to search over. (Default: 10.^[-3.0 : 0.1 :3.0]).
+%  param2     = parameter 2 values (e.g., apparent Hill coefficients) to search over. (Default: param2 = [0.05:0.05:4] )
 %  whichres   = [optional!] just look at this subset of input residues. (Give empty set [] to look at all residues. )
-%  fit_type   = string specifying functional form to search: "hill", "double_exp", "one_two" ( default is "hill" )
+%  fit_type   = string specifying functional form to search: "hill", "double_exp", "one_two", "melt" ( default is "hill" )
+%
+%  Less commonly used inputs...
 %  C_state_in = a 'target' set of values for footprinting data for each state. If not specified or [], no target set.
 %  plot_res   = which residues, if any, to make a 'nice' Hill plot with.  
-%  do_centralize = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 1, i.e., true)
+%  do_centralize  = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 1, i.e., true)
+%  conc_fine      = finely spaced concentrations to use when plotting. If not specified or [], use default.
+%  min_frac_error = minimum assumed relative error in points (default is 0.1)
+%  do_lane_normalization = try to fit lane normalization for each parameter value. (default is 1)
 %
-% (C) Das lab, Stanford University, 2008-2014
+% Outputs:
+%  p1_best = best fit for parameter 1 (e.g., K_d).
+%  p2_best = best fit for parameter 2 (e.g., hill coefficient).
+%  log_L   = matrix of log-likelihood values over input param1, param2.
+%  input_data_rescale = input_data over plot_res, rescaled from 0 to 1 (as shows up in plot_res plot)
+%  conc_fine             = concentrations assumed in making a fine curve that goes through input_data_rescale
+%  pred_fit_fine_rescale = values from 0 to 1 in fine curve fit through input_data_rescale
+%  input_data_renorm     = all input_data, lane normalizations applied
+%  pred_fit_fine_renorm  = predicted data, lane normalizations applied
+%
+% (C) Das lab, Stanford University, 2008-2016
 % 
 
 % initialization stuff
@@ -31,11 +47,13 @@ if size( input_data, 2) ~= length( conc )  ;  fprintf( '\nNumber of input_data r
 if size( input_data, 1) ~= length( resnum );  fprintf( '\nNumber of input_data cols must equal number of values in resnum\n' ); return; end;
 if ~exist( 'do_centralize'); do_centralize = 1; end;
 if ( do_centralize); input_data = centralize( input_data ); end;
+if ~exist( 'do_lane_normalization' ); do_lane_normalization = 1; end;
+if ( do_lane_normalization ) lane_normalization_in = []; else; lane_normalization_in = ones(1,size(input_data,2));  end
 if ~exist( 'plot_res' ); plot_res = []; end;
-
 if ~exist( 'param1' ) | isempty( param1 ); param1 = 10.^[-3.0 : 0.1 :3.0]; end
 if ~exist( 'param2' ) | isempty( param2 ); param2 = [0.05:0.05:4]; end;
 if ~exist( 'resnum' ) | isempty( resnum ); resnum = [1:size( input_data, 1 ) ]; end;
+if ~exist( 'min_frac_error' ) | isempty( min_frac_error ); min_frac_error = 0.2; end;
 if exist( 'whichres' ) & ~isempty( whichres )
   for k = 1:length(whichres)
     res_to_fit(k) = find( resnum == whichres(k) );
@@ -69,17 +87,15 @@ for i = 1: length( param1)
   if exist( 'parfor' )
     parfor j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2( j ),...
-						  input_data, conc, fit_type, [], C_state_in );
+						  input_data, conc, fit_type, lane_normalization_in, C_state_in, min_frac_error );
     end
   else
     for j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2( j ),...
-						  input_data, conc, fit_type, [], C_state_in );
+						  input_data, conc, fit_type, lane_normalization_in, C_state_in, min_frac_error );
     end
   end
 end
-
-
 
 
 t = toc;
@@ -92,24 +108,26 @@ log_L_best = max(max(log_L));
 p1_best = param1(ind1);
 p2_best = param2(ind2);
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf( 'Optimizing further to find local minimum... \n' );
+OPTIMIZE_MINIMUM = 1;
+if OPTIMIZE_MINIMUM
+  fprintf( 'Optimizing further to find local minimum... \n' );
 % originally tried fminbound, but that doesn't work for 2D
 %p_fminbnd = fminbnd(  'do_new_likelihood_fit_wrapper_for_fminbnd', [param1(ind1-1) param2(ind2-1)], [param1(ind1+1),param2(ind2+1)], [], input_data, conc, fit_type, [], C_state_in );
-if length( param2 ) > 1
-  [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, [], C_state_in );
-  p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
-else
-  [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, [], C_state_in, p2_best );
-  p1_best = p_fminbnd(1);
-end
+  if length( param2 ) > 1
+    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, lane_normalization_in, C_state_in, [], min_frac_error );
+    p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
+  else
+    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, lane_normalization_in, C_state_in, p2_best, min_frac_error );
+    p1_best = p_fminbnd(1);
+  end
 log_L_best = -minus_log_L_best;
+end
 
 %fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1_best, p2_name, p2_best, log_L_best);
 
 [logLbest, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] =...
-    do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, [],  C_state_in );
+    do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, lane_normalization_in, C_state_in, [], min_frac_error );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -134,8 +152,8 @@ p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
 % Create some smooth fit curves for pretty plots.
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
 if ~exist( 'conc_fine') | isempty( conc_fine ) 
-  if fit_type == 'melt';
-    conc_fine = [-10:0.5:110];
+  if ~isempty( strfind( fit_type, 'melt' ) )
+      conc_fine = [-10:0.5:110];
   else
     conc_fine = 10.^[(min(log_10_conc)-0.5) : 0.01 : (max(log_10_conc)+0.5) ]; 
   end
@@ -147,9 +165,10 @@ pred_fit_fine = C_state'*f;
 figure(1)
 clf
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
-make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
+  make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
-  semilogx( param1, log_L );
+  plot( param1, log_L );
+  xlabel( set_xscale( fit_type ) );
 end
 title( titlestring );
 
@@ -189,7 +208,10 @@ input_data_rescale = []; pred_fit_fine_rescale = [];
 
 if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, fit_type ); end;
 
-
+% useful for plotting values at each data point, compared to fits.
+input_data_renorm = input_data * diag( 1./lane_normalization ); % apply lane normalization
+f = feval( fit_type, conc_fine, p1_best, p2_best); % fraction folded values
+pred_data_fine_renorm = C_state'*f;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -228,8 +250,11 @@ if ( max_idx > 1 )
   while (idx > 1 & log_L(idx) < log_L( idx+1) )
     idx = idx - 1;  
   end
-  %p_low = param( idx+1 );
-  p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'cubic',NaN );
+  if ( (max_idx-idx) < 3 )
+    p_low = param( idx+1 );
+  else
+    p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'cubic',NaN );
+  end
 end
 
 p_high = param( max_idx );
@@ -238,18 +263,22 @@ if ( max_idx < length( param ) )
   while (idx < length(param) & log_L(idx) < log_L( idx-1 ) )
     idx = idx + 1;  
   end
-  %p_high = param( idx-1 );
-  p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'cubic',NaN );
+  if ( (idx - max_idx) < 3 )
+    p_high = param( idx-1 );
+  else
+    p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'cubic',NaN );
+  end
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [logL, sigma_vector] = run_inner_loop( p1, p2, ...
-						input_data, conc, fit_type, lane_normalization_in, C_state_in )
+						input_data, conc, fit_type, lane_normalization_in, ...
+						C_state_in, min_frac_error )
     
 [logL, pred_fit, lane_normalization, sigma_at_each_residue] = ...
-    do_new_likelihood_fit( input_data, conc, p1, p2, fit_type, lane_normalization_in, C_state_in );
+    do_new_likelihood_fit( input_data, conc, p1, p2, fit_type, lane_normalization_in, C_state_in, [], min_frac_error );
 
 sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 
@@ -264,29 +293,50 @@ colorcode = jet( length( plot_res ) );
 % don't allow pure yellow or light green!
 colorcode(:,2) = colorcode(:,2)/2;
 
+[profile_state1, profile_state2] = get_profiles_vs_conc( C_state, conc );
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
-  input_data_rescale(:,m) = (data_renorm(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+  input_data_rescale(:,m) = (data_renorm(i,:) - profile_state1(i,:) )./(profile_state2(i,:)-profile_state1(i,:));
   plot( conc, input_data_rescale(:,m), 'o', 'color', colorcode(m,:), 'markerfacecolor',colorcode(m,:) ); hold on;
 end
 
+[profile_state1_fine, profile_state2_fine] = get_profiles_vs_conc( C_state, conc_fine );
 for m = 1:length( plot_res )
   i = find( resnum == plot_res( m ) );
-  pred_fit_fine_rescale = (pred_fit_fine(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+  pred_fit_fine_rescale = (pred_fit_fine(i,:) - profile_state1_fine(i,:))./(profile_state2_fine(i,:)-profile_state1_fine(i,:));
   plot( conc_fine, pred_fit_fine_rescale, '-', 'color', colorcode(m,: ), 'linew',2 );     
 end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
 legend( num2str( plot_res' ), 4 )
-if ( fit_type == 'melt' ) 
+xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
+xlim( [min( conc_fine ) max( conc_fine ) ] );
+ylim( [-0.5 1.5] );
+set(gcf, 'PaperPositionMode','auto','color','white');
+title( titlestring );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function variable_parameter_name = set_xscale( fit_type );
+if ( ~isempty( strcmp( fit_type, 'melt' ) ) )
+  %temperature melts are linear in x
   variable_parameter_name = 'Temperature'; 
   set(gca,'xscale','lin');
 else
   variable_parameter_name = 'Concentration';
   set(gca,'xscale','log');
 end;
-xlabel( variable_parameter_name ); ylabel( 'Fraction transition' );
-xlim( [min( conc_fine ) max( conc_fine ) ] );
-set(gcf, 'PaperPositionMode','auto','color','white');
-title( titlestring );
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% generally the state profiles are assumed to be indenpendent of solution condition
+% or temperature (as stored in conc), but there's an exception in melt_with_lineary_baseline.
+function [profile_state1, profile_state2 ] = get_profiles_vs_conc( C_state, conc );
+
+profile_state1 = C_state(1,:)'*ones(1,length(conc));
+profile_state2 = C_state(2,:)'*ones(1,length(conc));
+
+if size( C_state, 1 ) > 2
+  assert( size( C_state, 1 ) == 4 ); 
+  % last components of C_state encode proportionality constants for linear baseline.
+  profile_state1 = profile_state1 + C_state(3,:)'*conc;
+  profile_state2 = profile_state2 + C_state(4,:)'*conc;
+end
