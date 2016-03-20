@@ -77,6 +77,12 @@ for the thermodynamic parameters.
 Frederiksen, J.K., Li, N.S., Das, R., Herschlag, D., and Piccirilli, J.A. (2012) "Metal-ion rescue revisited: Biochemical detection of site-bound metal ions important for RNA folding" RNA 18 (6) : 1123 - 1141.
 [Paper](https://daslab.stanford.edu/site_data/pub_pdf/2012_Frederiksen_RNA.pdf)
 
+### Standard Hill fits to single ligands
+Lee, J., Kladwang, W., Lee, M., Cantu, D., Azizyan, M., Kim, H., Limpaecher, A., Yoon, S., Treuille, A., Das, R., and EteRNA Participants (2014) 
+"RNA design rules from a massive open laboratory" 
+Proceedings of the National Academy of Sciences U.S.A. 111 (6) : 2122 - 2127.
+[Paper](https://daslab.stanford.edu/site_data/pub_pdf/2014_Lee_PNAS.pdf)
+
 ### For fitting two-ligand binders (e.g., glycine riboswitch)
 Kladwang, W., Chou, F.-C., and Das, R. (2012) "Automated RNA structure prediction uncovers a kink-turn linker in double glycine riboswitches" Journal of the American Chemical Society 134 (3) : 1404 - 1407 
 [Paper](https://daslab.stanford.edu/site_data/pub_pdf/2012_Kladwang_JACS.pdf)
