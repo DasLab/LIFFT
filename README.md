@@ -17,11 +17,11 @@ Written originally by Rhiju Das, Stanford University. original scripts written i
 See publications below for more information on mathematical form.
 
 ## Getting started
-• Download this package, or clone it.
+• Download this package, or clone it.  
 • Add the 'scripts' directory to your MATLAB path. Click 'Set Path', and 'Add with Subfolders...', then select 'scripts'.
 
 ## Examples
-•  In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple of  RNA sequences designed to present the FMN aptamer. 
+In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple of  RNA sequences designed to present the FMN aptamer.   
 
 In MATLAB, change working directory to this directory. Then take a look at the example script 'RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest.m'. It reads in the
 data from a workspace and then runs a loop over two data sets of FMN binding to different RNAs -- run LIFFT on each.
@@ -79,14 +79,17 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %  pred_fit_fine_renorm  = predicted data, lane normalizations applied
 %
 ```
+If you want default values for any inputs, you can typically type in the empty set `[]` for the variable (see above).
 
 ## Tips and troubleshooting
-• If you see an error related to `parfor` or similar, that's due to changes in the parallelization toolbox in different MATLAB versions. 
-You can go into the LIFFT function, and comment out the `parfor` block in favor of the `for` block.
-
-• If you see problems with NaNshowing up in data (or plots not showing up at all), that's often due to use of thermodynamic parameters 
+• If you see problems with NaN showing up in data (or plots not showing up at all), that's often due to use of thermodynamic parameters 
 that lead to undefined 'fraction folded' values, e.g., negative numbers for estimated binding affinities. Adjust the input values
-for the thermodynamic parameters.
+for the thermodynamic parameters.  
+• LIFFT, by default, runs a prenormalization ('centralize') on the data based on identifying residues that appear to change the least. If you suspect that this is causing an issue, set the input `do_centralize` to 0.  
+• If you want to totally turn off lane normalization during the fit, set `do_lane_normalization` to 0.  
+• If you see the fits do not appear to be going through the points cleanly that might be because LIFFT, by default, assumes that the typical error at each residue is > 10%. That level of uncertainty is often the case for chemical mapping, but for optical melts with UV absorbance readout, the error can be much less. In that case, set `min_frac_error` to be lower, e.g. 0.01.  
+• As of 2015, LIFFT assumes by default that the data start almost totally in one state and go to another. E.g., almost fully folded to almost fully unfolded. This is assumes as a 'baseline prior' favoring 'fraction folded' near 0 and 1  at beginning and end, respectively. IF you don't want to use this assumption, you'll have to go into the script `do_new_likelihood_fit.m` and find the line `BASELINE_PRIOR = 1`. Change it to `BASELINE_PRIOR = 0`.  
+• If you see an error related to `parfor` or similar, that's due to changes in the parallelization toolbox in different MATLAB versions. You can go into the LIFFT function, and comment out the `parfor` block in favor of the `for` block.
 
 ## Publications using this package
 ### For fitting Mg(2+)-dependent folding transitions (incl. Hill fits)
