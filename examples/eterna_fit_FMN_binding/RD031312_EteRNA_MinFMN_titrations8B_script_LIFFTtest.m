@@ -33,7 +33,12 @@ for i = which_sets
   whichres = [15:22];
 
   plotres = 18;
-  lifft( area_peak{i}( :, gp ), conc( gp ), [N: -1 : 1], K, n, whichres, 'hill', [], plotres );
+  lifft( area_peak{i}( :, gp ), conc( gp ), [N: -1 : 1], K, n, whichres, 'hill', [], plotres, 1, [], 0.01 );
+   
   pause;
 end
+
+% Figure 3: fit curves to signal strength.
+% Figure 4: data vs. fits vs. absolute residuals -- should be white (low residuals) on right hand plot.
+% Figure 5: The fits currently yield maximum likelihood Kd's of about 0.6 uM and 3.3 uM.
 

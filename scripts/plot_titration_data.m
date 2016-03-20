@@ -1,6 +1,9 @@
 function plot_titration_data( data, resnum, conc, ...
                  pred_fit, sigma_at_each_residue, lane_normalization, ...                      
                         conc_fine, pred_fit_fine, fit_type );
+%plot_titration_data( data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
+%
+% (C) R. Das, Stanford University 2008-2016.
 
 if ~exist( 'fit_type' ) fit_type = 'hill'; end;
 

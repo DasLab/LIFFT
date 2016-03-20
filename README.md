@@ -21,11 +21,10 @@ See publications below for more information on mathematical form.
 • Add the 'scripts' directory to your MATLAB path. Click 'Set Path', and 'Add with Subfolders...', then select 'scripts'.
 
 ## Examples
-•  In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a bunch of RNA sequences designed to present the FMN aptamer. In MATLAB, read in the saved workspace:
-```
-load saveRD031312_EteRNA_MinFMN_titrations8B.mat
-```
-Take a look at loop over several data sets of FMN binding to different RNAs -- run LIFFT on each.
+•  In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple of  RNA sequences designed to present the FMN aptamer. 
+
+In MATLAB, change working directory to this directory. Then take a look at the example script 'RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest.m'. It reads in the
+data from a workspace and then runs a look at loop over several data sets of FMN binding to different RNAs -- run LIFFT on each.
 ```
 open RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest
 RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest

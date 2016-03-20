@@ -285,6 +285,7 @@ sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring, fit_type ); 
+% Shows titration, scaled from 0 to 1 at user-specified plot_res
 
 data_renorm = input_data * diag(lane_normalization);
 
@@ -317,7 +318,7 @@ title( titlestring );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function variable_parameter_name = set_xscale( fit_type );
-if ( ~isempty( strcmp( fit_type, 'melt' ) ) )
+if ( ~isempty( strfind( fit_type, 'melt' ) ) )
   %temperature melts are linear in x
   variable_parameter_name = 'Temperature'; 
   set(gca,'xscale','lin');
