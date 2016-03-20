@@ -18,12 +18,22 @@ See publications below for more information on mathematical form.
 
 ## Getting started
 • Download this package, or clone it.
-• Add the scripts/ directory to your MATLAB path.
+• Add the 'scripts' directory to your MATLAB path. Click 'Set Path', and 'Add with Subfolders...', then select 'scripts'.
 
 ## Examples
-• Under construction.
+•  In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple of  RNA sequences designed to present the FMN aptamer. 
 
-## Current documentation of `lifft` function
+In MATLAB, change working directory to this directory. Then take a look at the example script 'RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest.m'. It reads in the
+data from a workspace and then runs a look at loop over several data sets of FMN binding to different RNAs -- run LIFFT on each.
+```
+open RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest
+RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest
+```
+
+## More detailed documentation of `lifft` function
+
+To get more detailed documentation, type `help lifft` in MATLAB. Here is a current example:
+
 ```
 function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization )
 %  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization );
