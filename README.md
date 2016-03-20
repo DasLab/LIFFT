@@ -24,11 +24,17 @@ See publications below for more information on mathematical form.
 •  In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple of  RNA sequences designed to present the FMN aptamer. 
 
 In MATLAB, change working directory to this directory. Then take a look at the example script 'RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest.m'. It reads in the
-data from a workspace and then runs a look at loop over several data sets of FMN binding to different RNAs -- run LIFFT on each.
+data from a workspace and then runs a loop over two data sets of FMN binding to different RNAs -- run LIFFT on each.
 ```
 open RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest
 RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest
 ```
+Example output, on second data set:
+
+<img width="513" alt="screen shot 2016-03-20 at 11 14 18 am" src="https://cloud.githubusercontent.com/assets/1672331/13906186/bba387ec-ee8d-11e5-8dfc-76b192dfeb75.png">
+<img width="528" alt="screen shot 2016-03-20 at 11 14 26 am" src="https://cloud.githubusercontent.com/assets/1672331/13906189/bd92d602-ee8d-11e5-8cc3-55435860bd4a.png">
+<img width="494" alt="screen shot 2016-03-20 at 11 14 33 am" src="https://cloud.githubusercontent.com/assets/1672331/13906190/c09f2e22-ee8d-11e5-9245-801aa19e62ce.png">
+
 
 ## More detailed documentation of `lifft` function
 
