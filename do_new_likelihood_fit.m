@@ -1,10 +1,24 @@
-
 function  [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
-    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  )
+    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C, min_frac_error )
+% [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
+%    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  )
+%
+%  data       = matrix of input structure mapping data, approximately normalized (e.g., by mean intensity in each lane)
+%                 must have dimensions of (number of residues x number of lanes ).
+%  conc       = concentration of chemical in titration (e.g., [adenine], or [Mg2+] ), or temperature (in C, for melts).
+%  K1         = fit parameter 1 (midpoint, in hill fit)
+%  n          = fit parameter 2 (apparent Hill coefficient, in hill fit)
+%  fit_type   = string specifying functional form to search: "hill", "double_exp", "one_two" ( default is "hill" )
+%  lane_normalization = correction factors for each lane (input empty set [] to estimate during likelihood fit)
+%  C_state_in = a 'target' set of values for footprinting data for each state. If not specified or [], no target set.
+%  beta_C     = parameter governing how close to stay near input C_state_in [not relevant if C_state_in is not inputted!]
+%  min_frac_error = minimum assumed relative error in points (default is 0.1)
+%
+% (C) Das lab, Stanford University, 2008-2016
 
 if ~exist( 'fit_type' ); fit_type = 'hill'; end;
-
-if ~exist( 'beta_C' ); beta_C = 0.1; end;  % how close to stay near input C_state_in [not relevant if C_state_in is not inputted!]
+if ~exist( 'beta_C' ) | isempty(beta_C); beta_C = 0.1; end;  % how close to stay near input C_state_in [not relevant if C_state_in is not inputted!]
+if ~exist( 'min_frac_error'); min_frac_error = 0.1; end;
 
 f = feval( fit_type, conc, K1, n );
 
@@ -19,9 +33,13 @@ end
 
 sigma_at_each_residue = ones( 1, numres );
 
-lane_normalization = ones( 1, numconc );
+FIT_LANE_NORMALIZATION = 0;
+if isempty( lane_normalization )
+  FIT_LANE_NORMALIZATION = 1;
+  lane_normalization = ones( 1, numconc );
+end
 
-SIGMIN_FRAC = 0.1;
+SIGMIN_FRAC = min_frac_error;
 
 for n = 1:numiter
 
@@ -29,7 +47,7 @@ for n = 1:numiter
   
   sigma_at_each_residue = get_sigma_at_each_residue( data, pred_fit, lane_normalization, SIGMIN_FRAC );
   
-  if ( n < numiter )
+  if ( FIT_LANE_NORMALIZATION & n < numiter )
     lane_normalization = normalize_lanes( data, pred_fit, sigma_at_each_residue );
   end
 
@@ -41,6 +59,7 @@ if exist( 'C_in' ) logL = logL - beta_C * sum( sum( (( C_in - C_state ) * diag( 
 
 BASELINE_PRIOR = 1;
 if BASELINE_PRIOR
+  BASELINE_DEV = 0.1;
   BASELINE_DEV = 0.05;
   logL = logL +  0.5 * ( f(1,1)   - 1).^2 /BASELINE_DEV^2;
   logL = logL +  0.5 * ( f(1,end) - 0).^2 /BASELINE_DEV^2;
