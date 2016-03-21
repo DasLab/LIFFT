@@ -1,10 +1,11 @@
-
 function data_center = centralize( data, refcol, PLOTSTUFF );
 % data_center = centralize( data, refcol, PLOTSTUFF );
 %
 % data      = input data matrix
 % refcol    = which column sets the 'starting' normalization (default 1) 
 % PLOTSTUFF = make plots of histograms of data ratios, and chosen normalization factors.
+%
+% (C) R. Das, Stanford University 2010-2016.
 
 niter = 5;
 stdev_cut  = 2;

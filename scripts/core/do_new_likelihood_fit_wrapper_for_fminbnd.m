@@ -1,5 +1,11 @@
 function [minus_logL, pred_fit, lane_normalization, sigma_at_each_residue] = ...
     do_new_likelihood_fit_wrapper_for_fminbnd( p, input_data, conc, fit_type, lane_normalization_in, C_state_in, p2_best, min_frac_error );
+% [minus_logL, pred_fit, lane_normalization, sigma_at_each_residue] = ...
+%    do_new_likelihood_fit_wrapper_for_fminbnd( p, input_data, conc, fit_type, lane_normalization_in, C_state_in, p2_best, min_frac_error );
+%
+% Simple wrapper used for optimization within lifft.m
+%
+
 
 p1 = p(1); 
 if length( p ) > 1

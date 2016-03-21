@@ -1,5 +1,9 @@
 function make_logL_contour_plot( logLout, param1, param2, param1_name, param2_name, p1_best, p2_best )
 % make_logL_contour_plot( logLout, param1, param2, param1_name, param2_name, p1_best, p2_best )
+%
+% Helper function separated out of lifft.m
+% 
+% (C) R. Das, Stanford University 2008-2016.
 
 if ~exist( 'param1_name' ); param1_name = 'K'; end;
 if ~exist( 'param2_name' ); param2_name = 'n_{Hill}'; end;
