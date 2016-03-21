@@ -1,4 +1,20 @@
 function [f, p1_name, p2_name ] = one_two( conc, K1, K2 );
+%  [f, p1_name, p2_name ] = one_two( conc, K1, K2 );
+%
+% Binding isotherm for a molecule that binds up to 2 ligands.
+%
+%  X <--> X*L <--> X*2L
+%     K1       K2      
+%
+% K1 and K2 are dissociation constants for first and second ligand.
+%
+% f0 = 1         / [1 + conc/K1 + (conc/K1)(conc/K2)]
+% f1 = (conc/K1) / [1 + conc/K1 + (conc/K1)(conc/K2)]
+% f2 = (conc/K2) / [1 + conc/K1 + (conc/K1)(conc/K2)]
+%
+% (C) R. Das, Stanford University 2011-2016.
+%
+
 
 p1_name = 'K1';
 p2_name = 'K2';
