@@ -74,7 +74,15 @@ p2_best = 999;
 
 tic
 % open matlab slaves if they're not open already. Skip this if user does not have parallelization toolbox.
-if exist( 'matlabpool');  if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end; end
+if exist( 'matlabpool');  
+    if matlabpool( 'size' ) == 0 ;
+        if exist( 'parcluster' )
+            res = parcluster; matlabpool( res.NumWorkers );
+        else
+           res = findResource; matlabpool( res.ClusterSize );
+        end
+     end; 
+end
 
 
 % MAIN LOOP! Grid search. Good stuff is inside run_inner_loop
