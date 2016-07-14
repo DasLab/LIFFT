@@ -21,9 +21,10 @@ See publications below for more information on mathematical form.
 • Add the 'scripts' directory to your MATLAB path. Click 'Set Path', and 'Add with Subfolders...', then select 'scripts'.
 
 ## Examples
-In `examples/eterna_fit_FMN_binding' is an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple of  RNA sequences designed to present the FMN aptamer.   
+### Ligand binding transitions
+`examples/eterna_fit_FMN_binding` gives an example from the Eterna PNAS 2014 paper, fitting the binding affinity of flavin mononucleotide (FMN) to a couple ofRNA sequences designed to present the FMN aptamer.   
 
-In MATLAB, change working directory to this directory. Then take a look at the example script 'RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest.m'. It reads in the
+In MATLAB, change working directory to this directory. Then take a look at the example script `RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest.m`. It reads in the
 data from a workspace and then runs a loop over two data sets of FMN binding to different RNAs -- run LIFFT on each.
 ```
 open RD031312_EteRNA_MinFMN_titrations8B_script_LIFFTtest
@@ -35,9 +36,15 @@ Example output, on second data set:
 <img width="528" alt="screen shot 2016-03-20 at 11 14 26 am" src="https://cloud.githubusercontent.com/assets/1672331/13906189/bd92d602-ee8d-11e5-8cc3-55435860bd4a.png">
 <img width="494" alt="screen shot 2016-03-20 at 11 14 33 am" src="https://cloud.githubusercontent.com/assets/1672331/13906190/c09f2e22-ee8d-11e5-9245-801aa19e62ce.png">
 
+### Temperature-dependent melts (chemical mapping)  
+`examples/DMS_melt_AAAA` gives an example of fitting to standardized dimethyl sulfate (DMS) data on an AAAA tetraloop hairpin, flanked by stable GAGUA reference hairpins.
+
+### Classic optical melts
+Even classic optical melting experiments, read out by UV absorbance changes with temperature, can benefit from likelihood-based analysis. Shimadzu and Cary spectrophotometers often allow probing of the same nucleic acid sample at multiple concentrations. For monomeric unfolding, these should all report the same thermodynamic parameters, and so a global fit is possible.   `examples/optical_melt_AAAA` gives an example of such a fit, including 'sloping baselines' and an update to take into account the lower point-to-point error in these experiments compared to chemical mapping.
 
 ## More detailed documentation of `lifft` function
 
+### Syntax of `lifft` MATLAB function
 To get more detailed documentation, type `help lifft` in MATLAB. Here is a current example:
 
 ```
@@ -80,6 +87,52 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %
 ```
 If you want default values for any inputs, you can typically type in the empty set `[]` for the variable (see above).
+
+### Available fitting functions
+Several options are available in `scripts/fit_functions/`, each taking two thermodynamic parameters:  
+
+• `hill` carries out standard Hill fits.  
+Parameter 1 is midpoint concentration; parameter 2 is apparent Hill coefficient:
+```
+Frac folded = [ conc/K ]^n  / [ 1  +  (conc/K)^n ];
+```
+The usual caveats of using Hill forms applies. For Mg(2+) binding, see, e.g., [this review](https://daslab.stanford.edu/site_data/pub_pdf/2014_Lipfert_AnnRevBiochem.pdf).
+
+• `one_two` is the binding isotherm for a molecule that binds up to 2 ligands.  
+```
+
+  X <--> X*L <--> X*2L
+     K1       K2      
+
+ K1 and K2 are dissociation constants for first and second ligand.
+
+ f0 = 1         / [1 + conc/K1 + (conc/K1)(conc/K2)]
+ f1 = (conc/K1) / [1 + conc/K1 + (conc/K1)(conc/K2)]
+ f2 = (conc/K2) / [1 + conc/K1 + (conc/K1)(conc/K2)]
+```
+
+• `melt` is the fit to temperature-dependent melts, with melting temperature (Tm) and enthalpy change (delH)  as parameters.  
+```
+
+ Equilibrium between two states, K = 
+            exp[ (delH/R) * ( 1/Tm - 1/T) ]
+
+ Frac. folded, f = K/ (1 + K )
+
+ Note: assumes no heat capacity difference
+```
+
+• `melt_with_linear_baseline` is an expansion of `melt`.  
+As in `melt', states have populations f and 1-f, but this also outputs two other 'states' with fraction folded T*f and T*(1-f), which
+  tricks LIFFT into also fitting a linear baseline for the folded and unfolded states.
+
+• `double_exp` (for timecourses; not well tested)
+```
+f0 = 1
+f1 = exp( -t/tau1)
+f2 = exp( -t/tau2).
+```
+Might be better to normalize above to the sum of terms, to correctly reflect "fraction folded".
 
 ## Tips and troubleshooting
 • If you see problems with NaN showing up in data (or plots not showing up at all), that's often due to use of thermodynamic parameters 
