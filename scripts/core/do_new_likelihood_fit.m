@@ -1,5 +1,5 @@
 function  [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
-    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C, min_frac_error )
+    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C, min_frac_error, baseline_dev )
 % [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
 %    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  )
 %
@@ -13,12 +13,14 @@ function  [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ]
 %  C_state_in = a 'target' set of values for footprinting data for each state. If not specified or [], no target set.
 %  beta_C     = parameter governing how close to stay near input C_state_in [not relevant if C_state_in is not inputted!]
 %  min_frac_error = minimum assumed relative error in points (default is 0.1)
+%  baseline_dev = amount of deviation to allow for start & end fraction folded to deviate from 1 and 0 (default = 0.05)
 %
 % (C) Das lab, Stanford University, 2008-2016
 
 if ~exist( 'fit_type' ); fit_type = 'hill'; end;
 if ~exist( 'beta_C' ) | isempty(beta_C); beta_C = 0.1; end;  % how close to stay near input C_state_in [not relevant if C_state_in is not inputted!]
 if ~exist( 'min_frac_error'); min_frac_error = 0.1; end;
+if ~exist( 'baseline_dev' ); baseline_dev = 0.05; end;
 
 f = feval( fit_type, conc, K1, n );
 
@@ -57,12 +59,10 @@ logL = - numconc * sum( log( sigma_at_each_residue ) );
 
 if exist( 'C_in' ) logL = logL - beta_C * sum( sum( (( C_in - C_state ) * diag( 1./sigma_normalization)).^2 ) ); end;
 
-BASELINE_PRIOR = 1;
+BASELINE_PRIOR = ( baseline_dev > 0.0 );
 if BASELINE_PRIOR
-  BASELINE_DEV = 0.1;
-  BASELINE_DEV = 0.05;
-  logL = logL +  0.5 * ( f(1,1)   - 1).^2 /BASELINE_DEV^2;
-  logL = logL +  0.5 * ( f(1,end) - 0).^2 /BASELINE_DEV^2;
+  logL = logL +  0.5 * ( f(1,1)   - 1).^2 / baseline_dev^2;
+  logL = logL +  0.5 * ( f(1,end) - 0).^2 / baseline_dev^2;
 end
 
 lane_normalization = 1./lane_normalization;

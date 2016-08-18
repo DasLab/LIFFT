@@ -1,5 +1,5 @@
-function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization )
-%  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization );
+function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev )
+%  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev );
 %
 % LIFFT: Likelihood-informed Fits of Footprinting Titraions
 %
@@ -22,8 +22,9 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %  plot_res   = which residues, if any, to make a 'nice' Hill plot with.  
 %  do_centralize  = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 1, i.e., true)
 %  conc_fine      = finely spaced concentrations to use when plotting. If not specified or [], use default.
-%  min_frac_error = minimum assumed relative error in points (default is 0.1)
+%  min_frac_error = minimum assumed relative error in points (default is 0.2)
 %  do_lane_normalization = try to fit lane normalization for each parameter value. (default is 1)
+%  baseline_dev = amount of deviation to allow for start & end fraction folded to deviate from 1 and 0 (default = 0.05)
 %
 % Outputs:
 %  p1_best = best fit for parameter 1 (e.g., K_d).
@@ -54,6 +55,7 @@ if ~exist( 'param1' ) | isempty( param1 ); param1 = 10.^[-3.0 : 0.1 :3.0]; end
 if ~exist( 'param2' ) | isempty( param2 ); param2 = [0.05:0.05:4]; end;
 if ~exist( 'resnum' ) | isempty( resnum ); resnum = [1:size( input_data, 1 ) ]; end;
 if ~exist( 'min_frac_error' ) | isempty( min_frac_error ); min_frac_error = 0.2; end;
+if ~exist( 'baseline_dev' ); baseline_dev = 0.05; end;
 if exist( 'whichres' ) & ~isempty( whichres )
   for k = 1:length(whichres)
     res_to_fit(k) = find( resnum == whichres(k) );
@@ -95,12 +97,12 @@ for i = 1: length( param1)
   if exist( 'parfor' )
     parfor j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2( j ),...
-						  input_data, conc, fit_type, lane_normalization_in, C_state_in, min_frac_error );
+						  input_data, conc, fit_type, lane_normalization_in, C_state_in, min_frac_error, baseline_dev );
     end
   else
     for j = 1: length( param2) % this could be parallelized for speed..
       [ log_L(i,j), sigma_all(:,i,j) ] = run_inner_loop( param1( i ), param2( j ),...
-						  input_data, conc, fit_type, lane_normalization_in, C_state_in, min_frac_error );
+						  input_data, conc, fit_type, lane_normalization_in, C_state_in, min_frac_error, baseline_dev );
     end
   end
 end
@@ -123,10 +125,10 @@ if OPTIMIZE_MINIMUM
 % originally tried fminbound, but that doesn't work for 2D
 %p_fminbnd = fminbnd(  'do_new_likelihood_fit_wrapper_for_fminbnd', [param1(ind1-1) param2(ind2-1)], [param1(ind1+1),param2(ind2+1)], [], input_data, conc, fit_type, [], C_state_in );
   if length( param2 ) > 1
-    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, lane_normalization_in, C_state_in, [], min_frac_error );
+    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best, p2_best], [], input_data, conc, fit_type, lane_normalization_in, C_state_in, [], min_frac_error, baseline_dev );
     p1_best = p_fminbnd(1); p2_best = p_fminbnd(2);
   else
-    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, lane_normalization_in, C_state_in, p2_best, min_frac_error );
+    [p_fminbnd, minus_log_L_best] = fminsearch(  'do_new_likelihood_fit_wrapper_for_fminbnd', [p1_best ], [], input_data, conc, fit_type, lane_normalization_in, C_state_in, p2_best, min_frac_error, baseline_dev );
     p1_best = p_fminbnd(1);
   end
 log_L_best = -minus_log_L_best;
@@ -135,7 +137,7 @@ end
 %fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1_best, p2_name, p2_best, log_L_best);
 
 [logLbest, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] =...
-    do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, lane_normalization_in, C_state_in, [], min_frac_error );
+    do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, lane_normalization_in, C_state_in, [], min_frac_error, baseline_dev );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -283,10 +285,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [logL, sigma_vector] = run_inner_loop( p1, p2, ...
 						input_data, conc, fit_type, lane_normalization_in, ...
-						C_state_in, min_frac_error )
+						C_state_in, min_frac_error, baseline_dev )
     
 [logL, pred_fit, lane_normalization, sigma_at_each_residue] = ...
-    do_new_likelihood_fit( input_data, conc, p1, p2, fit_type, lane_normalization_in, C_state_in, [], min_frac_error );
+    do_new_likelihood_fit( input_data, conc, p1, p2, fit_type, lane_normalization_in, C_state_in, [], min_frac_error, baseline_dev );
 
 sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 
