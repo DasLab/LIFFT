@@ -171,6 +171,8 @@ end;
 f = feval( fit_type, conc_fine, p1_best, p2_best);
 pred_fit_fine = C_state'*f;
 
+toc
+
 % Make a pretty plot.
 figure(1)
 clf
@@ -263,7 +265,7 @@ if ( max_idx > 1 )
   if ( (max_idx-idx) < 3 )
     p_low = param( idx+1 );
   else
-    p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'cubic',NaN );
+    p_low = interp1( log_L( idx: max_idx ), param( [idx : max_idx] ), log_L_cutoff, 'pchip',NaN );
   end
 end
 
@@ -276,7 +278,7 @@ if ( max_idx < length( param ) )
   if ( (idx - max_idx) < 3 )
     p_high = param( idx-1 );
   else
-    p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'cubic',NaN );
+    p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'pchip',NaN );
   end
 end
 
@@ -319,7 +321,7 @@ for m = 1:length( plot_res )
 end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
-legend( num2str( plot_res' ), 4 )
+legend( num2str( plot_res' ), 'location', 'east' )
 xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
 ylim( [-0.5 1.5] );

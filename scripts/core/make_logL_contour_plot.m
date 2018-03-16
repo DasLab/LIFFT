@@ -58,3 +58,5 @@ else
 end
 
 colormap( jet )
+set(gcf, 'PaperPositionMode','auto','color','white');
+
