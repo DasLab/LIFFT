@@ -10,7 +10,7 @@ function rundemo( demo_name )
 %  'single_ligand' = one ligand binding (FMN binding to a sensor designed on EteRNA) 
 %  'mg'            = Hill fit to a Mg2+ titration (folding of an SRP internal loop)
 %  'melt'          = Temperature dependent unfolding of a small aptamer 
-%    
+%   'melt_with_linear_baseline'
 %
 
 if ( nargin < 1 )
@@ -18,18 +18,22 @@ if ( nargin < 1 )
     return;
 end
 
-
 switch demo_name
     case 'all'
         mg_demo(); pause;
         melt_demo(); pause;
+        melt_with_linear_baseline_demo(); pause;
         single_ligand_demo()
     case 'mg'
         mg_demo()
     case 'melt'
         melt_demo()
+    case 'melt_with_linear_baseline'
+        melt_with_linear_baseline_demo()
     case 'single_ligand'
         single_ligand_demo()
+    otherwise
+        fprintf( 'Unrecognized demo name. For list of demos, type: \nhelp lifft\n'
 end
 
 
@@ -100,7 +104,6 @@ function melt_demo()
 % data is saved in here, along with example analysis.
 load save_analyze_121814_Matt2_C5_P1_Elim_393027_DMS.mat
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Tm = [30:1:80];
 delH = [-100:2:-10];
 
@@ -112,3 +115,22 @@ plotres = [2 4 10]; % some residues in target stem, just for plotting
 
 fprintf( '\n\nDemo: RNA hairpin unfolding vs. temperature.\nData are for an AAAA-tetraloop hairpin (manuscript in prep.).\n\n\n' )
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function melt_with_linear_baseline_demo()
+% adapted from
+% examples/optical_melt_AAAA/run_lifft_on_090115_AAAA14_Caco_5_90_optical_melt.m
+%  Note: fewer input parameters searched, for speed.
+
+Tm = [30:1:80];
+delH = [-100:5:-10];
+
+min_type = 'melt_with_linear_baseline';
+min_frac_err = 0.01;
+
+tag = '090115_AAAA14_Caco_5_90/090115_AAAA14_Caco_5_90_exp';
+
+this_dirname = fileparts( which( 'run_lifft_on_090115_AAAA14_Caco_5_90_optical_melt.m' ) );
+tag = [this_dirname,'/',tag]
+[d,temperatures,filenames] = read_melt_data( tag );
+[ p1_best, p2_best, log_L, C_state, ~, conc_fine, ~, input_data_renorm, pred_fit_fine_renorm  ]  = lifft( d, temperatures, [], Tm, delH,[],min_type,[],[1:size(d,2)],0,[],min_frac_err);
