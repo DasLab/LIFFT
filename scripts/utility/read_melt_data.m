@@ -2,7 +2,7 @@ function [d, temperatures, filenames] = read_melt_data( tag );
 files = dir( [tag,'*.txt'] );
 d = []; count = 0;
 for i = 1:length( files )
-  filename = [ dirname( tag ), '/', files(i).name ];
+  filename = [ fileparts( tag ), '/', files(i).name ];
   if ~isempty(strfind( filename, '_0.txt' )); continue; end
   if ~isempty(strfind( filename, '_0uM.txt' )); continue; end
   if ~isempty(strfind( filename, 'Buff' )); continue; end
