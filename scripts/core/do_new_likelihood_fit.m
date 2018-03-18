@@ -61,8 +61,8 @@ if exist( 'C_in' ) logL = logL - beta_C * sum( sum( (( C_in - C_state ) * diag( 
 
 BASELINE_PRIOR = ( baseline_dev > 0.0 );
 if BASELINE_PRIOR
-  logL = logL +  0.5 * ( f(1,1)   - 1).^2 / baseline_dev^2;
-  logL = logL +  0.5 * ( f(1,end) - 0).^2 / baseline_dev^2;
+  logL = logL -  0.5 * ( f(1,1)   - 1).^2 / baseline_dev^2;
+  logL = logL -  0.5 * ( f(1,end) - 0).^2 / baseline_dev^2;
 end
 
 lane_normalization = 1./lane_normalization;

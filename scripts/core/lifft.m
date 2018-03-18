@@ -1,7 +1,7 @@
 function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev )
 %  [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev );
 %
-% LIFFT: Likelihood-informed Fits of Footprinting Titraions
+% LIFFT: Likelihood-informed Fits of Footprinting Titrations
 %
 % Optimizes lane normalizaton and calculates
 %  errors at each residue while doing a grid search over midpoints and apparent Hill coefficients.
@@ -36,7 +36,7 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %  input_data_renorm     = all input_data, lane normalizations applied
 %  pred_fit_fine_renorm  = predicted data, lane normalizations applied
 %
-% (C) Das lab, Stanford University, 2008-2016
+% (C) Das lab, Stanford University, 2008-2016,2018
 % 
 
 % initialization stuff
@@ -46,7 +46,7 @@ if ( size( input_data, 2) ~= length( conc ) && size( input_data, 1) == length( c
 if isempty( resnum ); resnum = [1:size( input_data, 1) ]; end;
 if size( input_data, 2) ~= length( conc )  ;  fprintf( '\nNumber of input_data rows must equal number of values in conc\n' ); return; end;
 if size( input_data, 1) ~= length( resnum );  fprintf( '\nNumber of input_data cols must equal number of values in resnum\n' ); return; end;
-if ~exist( 'do_centralize'); do_centralize = 1; end;
+if ~exist( 'do_centralize'); do_centralize = 0; end;
 if ( do_centralize); input_data = centralize( input_data ); end;
 if ~exist( 'do_lane_normalization' ); do_lane_normalization = 1; end;
 if ( do_lane_normalization ) lane_normalization_in = []; else; lane_normalization_in = ones(1,size(input_data,2));  end
@@ -217,7 +217,6 @@ set(gcf, 'PaperPositionMode','auto','color','white');
 
 % If user has specified 'plot_res' make a plot specifically focused on the data at those residues.
 input_data_rescale = []; pred_fit_fine_rescale = [];
-
 if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, fit_type ); end;
 
 % useful for plotting values at each data point, compared to fits.
@@ -225,6 +224,10 @@ input_data_renorm = input_data * diag( 1./lane_normalization ); % apply lane nor
 f = feval( fit_type, conc_fine, p1_best, p2_best); % fraction folded values
 pred_data_fine_renorm = C_state'*f;
 
+% the most interesting plots.
+figure(1)
+figure(4)
+figure(5)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -321,7 +324,7 @@ for m = 1:length( plot_res )
 end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
-legend( num2str( plot_res' ), 'location', 'east' )
+legend( num2str( plot_res' ), 'location', 'eastoutside' )
 xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
 ylim( [-0.5 1.5] );
@@ -347,7 +350,7 @@ function [profile_state1, profile_state2 ] = get_profiles_vs_conc( C_state, conc
 profile_state1 = C_state(1,:)'*ones(1,length(conc));
 profile_state2 = C_state(2,:)'*ones(1,length(conc));
 
-if size( C_state, 1 ) > 2
+if size( C_state, 1 ) > 3
   assert( size( C_state, 1 ) == 4 ); 
   % last components of C_state encode proportionality constants for linear baseline.
   profile_state1 = profile_state1 + C_state(3,:)'*conc;
