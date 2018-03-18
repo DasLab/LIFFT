@@ -14,7 +14,7 @@ which_res = [3:31 33:61]; % there was an additional feature added in the publish
 which_conc = [1:13];  % 14,15,16 show another transition
 
 % Hill coefficients to scan over. In this case, just assumed 1.
-n = [1:0.2:4];
+n = [0.2:0.2:4];
 
 % K_d (dissociation constants) to check. Again, units of uM.
 K = 10.^[-2:0.05:-0.5];
@@ -26,4 +26,5 @@ plot_res = [19 20 35 36];
 do_centralize = 0;
 %which_lanes = [1:16]; % wild type
 which_lanes = [49:64]; % double mutant (C6G/C22U)
-lifft( area_norm(which_res,which_lanes(which_conc)), conc(which_conc), [], K, n, fit_res,'hill',[],plot_res, do_centralize )
+
+lifft( area_norm(which_res,which_lanes(which_conc)), conc(which_conc), [], K, n, fit_res,'hill',[],plot_res, do_centralize,[],[],1,0.01 )
