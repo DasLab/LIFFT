@@ -20,10 +20,10 @@ function [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred
 %  Less commonly used inputs...
 %  C_state_in = a 'target' set of values for footprinting data for each state. If not specified or [], no target set.
 %  plot_res   = which residues, if any, to make a 'nice' Hill plot with.  
-%  do_centralize  = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 1, i.e., true)
+%  do_centralize  = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 0, i.e., false)
 %  conc_fine      = finely spaced concentrations to use when plotting. If not specified or [], use default.
-%  min_frac_error = minimum assumed relative error in points (default is 0.2)
-%  do_lane_normalization = try to fit lane normalization for each parameter value. (default is 1)
+%  min_frac_error = minimum assumed relative error in points (default is 0.2, except defaults to 0.01 for melt_with_linear_baseline)
+%  do_lane_normalization = try to fit lane normalization for each parameter value. (default is 1, except defaults to 0 for melt_with_linear_baseline)
 %  baseline_dev = amount of deviation to allow for start & end fraction folded to deviate from 1 and 0 (default = 0.05)
 %
 % Outputs:
@@ -48,13 +48,20 @@ if size( input_data, 2) ~= length( conc )  ;  fprintf( '\nNumber of input_data r
 if size( input_data, 1) ~= length( resnum );  fprintf( '\nNumber of input_data cols must equal number of values in resnum\n' ); return; end;
 if ~exist( 'do_centralize'); do_centralize = 0; end;
 if ( do_centralize); input_data = centralize( input_data ); end;
-if ~exist( 'do_lane_normalization' ); do_lane_normalization = 1; end;
+if ~exist( 'fit_type' ); fit_type = 'hill'; end;
+if ~exist( 'do_lane_normalization' ); 
+    do_lane_normalization = 1; 
+    if strcmp( fit_type, 'melt_with_linear_baseline' ) do_lane_normalization = 0; end;
+end;
 if ( do_lane_normalization ) lane_normalization_in = []; else; lane_normalization_in = ones(1,size(input_data,2));  end
 if ~exist( 'plot_res' ); plot_res = []; end;
 if ~exist( 'param1' ) | isempty( param1 ); param1 = 10.^[-3.0 : 0.1 :3.0]; end
 if ~exist( 'param2' ) | isempty( param2 ); param2 = [0.05:0.05:4]; end;
 if ~exist( 'resnum' ) | isempty( resnum ); resnum = [1:size( input_data, 1 ) ]; end;
-if ~exist( 'min_frac_error' ) | isempty( min_frac_error ); min_frac_error = 0.2; end;
+if ~exist( 'min_frac_error' ) | isempty( min_frac_error ); 
+    min_frac_error = 0.2; 
+    if strcmp( fit_type, 'melt_with_linear_baseline' ) min_frac_error = 0.01; end;
+end;
 if ~exist( 'baseline_dev' ); baseline_dev = 0.05; end;
 if exist( 'whichres' ) & ~isempty( whichres )
   for k = 1:length(whichres)
@@ -63,7 +70,6 @@ if exist( 'whichres' ) & ~isempty( whichres )
   input_data = input_data( res_to_fit, : );
   resnum = resnum( res_to_fit );
 end
-if ~exist( 'fit_type' ); fit_type = 'hill'; end;
 if ~exist( 'C_state_in' ); C_state_in = []; end;
 if ( size( C_state_in, 1 ) == 1 ); C_state_in = input_data( :, C_state_in )'; end;
 
@@ -284,6 +290,7 @@ if ( max_idx < length( param ) )
     p_high = interp1( log_L( max_idx:idx ), param( [ max_idx : idx ] ), log_L_cutoff, 'pchip',NaN );
   end
 end
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
