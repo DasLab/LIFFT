@@ -18,7 +18,7 @@ See publications below for more information on mathematical form.
 
 ## Getting started
 • Download this package, or clone it.  
-• Add the 'scripts' directory to your MATLAB path. Click 'Set Path', and 'Add with Subfolders...', then select 'LIFFT'.
+• Add the 'scripts' directory to your MATLAB path. Click 'Set Path', and 'Add with Subfolders...', then select 'LIFFT'.  
 • Check out the demos. Run
 ```
 lifft_demo()
@@ -141,10 +141,10 @@ f2 = exp( -t/tau2).
 (Might be better to normalize above to the sum of terms, to correctly reflect "fraction folded".)
 
 ## Tips and troubleshooting
-• The first time you run LIFFT, you may see it hanging with a message like `Starting parallel pool (parpool) using the 'local' profile ...`. Just wait, and it won't hang the next time.
+• The first time you run LIFFT, you may see it hanging with a message like `Starting parallel pool (parpool) using the 'local' profile ...`. Just wait, and it won't hang the next time.  
 • If you see problems with NaN showing up in data (or plots not showing up at all), that's often due to use of thermodynamic parameters 
 that lead to undefined 'fraction folded' values, e.g., negative numbers for estimated binding affinities. Adjust the input values
-for the thermodynamic parameters. For Hill fits, do not use 0.0 as one of the input Hill coefficients.
+for the thermodynamic parameters. For Hill fits, do not use 0.0 as one of the input Hill coefficients.  
 • LIFFT can try to run a prenormalization ('centralize') on the data based on identifying residues that appear to change the least. If you'd like to try this, set the input `do_centralize` to 1.  
 • If you want to totally turn off lane normalization during the fit, set `do_lane_normalization` to 0.  
 • If you see the fits do not appear to be going through the points cleanly that might be because LIFFT, by default, assumes that the typical error at each residue is > 10%. That level of uncertainty is often the case for chemical mapping, but for optical melts with UV absorbance readout, the error can be much less. In that case, set `min_frac_error` to be lower, e.g. 0.01.  
@@ -164,10 +164,11 @@ Proceedings of the National Academy of Sciences U.S.A. 111 (6) : 2122 - 2127.
 
 ### For fitting two-ligand binders (e.g., glycine riboswitch)
 Kladwang, W., Chou, F.-C., and Das, R. (2012) "Automated RNA structure prediction uncovers a kink-turn linker in double glycine riboswitches" Journal of the American Chemical Society 134 (3) : 1404 - 1407 
-[Paper](https://daslab.stanford.edu/site_data/pub_pdf/2012_Kladwang_JACS.pdf)
+[Paper](https://daslab.stanford.edu/site_data/pub_pdf/2012_Kladwang_JACS.pdf)  
+And: Frederiksen et al. as above [Paper](https://daslab.stanford.edu/site_data/pub_pdf/2012_Frederiksen_RNA.pdf).
 
 ### For fitting UV melting data 
-Vaidyanathan, P. AlSadhan, I., Merriman, D.K., Al-Hashimi, H.M., and Herschlag, D. (2017) "Pseudouridine and N6-methyladenosine modifications weaken PUF protein/RNA interactions" RNA 23: 611-618.
+Vaidyanathan, P., AlSadhan, I., Merriman, D.K., Al-Hashimi, H.M., and Herschlag, D. (2017) "Pseudouridine and N6-methyladenosine modifications weaken PUF protein/RNA interactions" RNA 23: 611-618.
 
 
 
