@@ -3,7 +3,7 @@
 Folding of biomolecules can be induced by cooling temperature, adding small molecule partners, or changing ionic conditions. 
 
 Several techniques now exist to probe these transitions at different places on a molecule. For RNA in particular, chemical mapping
-measurements return data at each nucleotide of the molecule, as a function of folding condition: a 2D matrix.
+measurements return data at each nucleotide of the molecule, as a function of folding condition: a 2D matrix. Spectroscopy approaches (NMR, fluorescence, absorbance) can also return data at multiple frequencies for a molecule undergoing a folding transition.
 
 Learning from these data requires modeling them, which in turn requires defining a quantitative model and fitting thermodynamic parameters.
 These analyses require assumptions about normalization, which residues to fit, how to estimate errors, etc. which are not always explicitly defined.
@@ -53,9 +53,9 @@ Even classic optical melting experiments, read out by UV absorbance changes with
 To get more detailed documentation, type `help lifft` in MATLAB. Here is a current example:
 
 ```
-[ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev );
+[ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev );   [ p1_best, p2_best, log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale, input_data_renorm, pred_fit_fine  ] = lifft( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res, do_centralize, conc_fine, min_frac_error, do_lane_normalization, baseline_dev );
  
-  lifft: Likelihood-informed Fits of Footprinting Titraions
+  lifft: Likelihood-informed Fits of Footprinting Titrations
  
   Optimizes lane normalizaton and calculates
    errors at each residue while doing a grid search over midpoints and apparent Hill coefficients.
@@ -74,10 +74,10 @@ To get more detailed documentation, type `help lifft` in MATLAB. Here is a curre
    Less commonly used inputs...
    C_state_in = a 'target' set of values for footprinting data for each state. If not specified or [], no target set.
    plot_res   = which residues, if any, to make a 'nice' Hill plot with.  
-   do_centralize  = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 1, i.e., true)
+   do_centralize  = pre-'normalize' the data based on assumption that some residues stay invariant during the titration (default = 0, i.e., false)
    conc_fine      = finely spaced concentrations to use when plotting. If not specified or [], use default.
-   min_frac_error = minimum assumed relative error in points (default is 0.2)
-   do_lane_normalization = try to fit lane normalization for each parameter value. (default is 1)
+   min_frac_error = minimum assumed relative error in points (default is 0.2, except defaults to 0.01 for melt_with_linear_baseline)
+   do_lane_normalization = try to fit lane normalization for each parameter value. (default is 1, except defaults to 0 for melt_with_linear_baseline)
    baseline_dev = amount of deviation to allow for start & end fraction folded to deviate from 1 and 0 (default = 0.05)
  
   Outputs:
@@ -90,7 +90,7 @@ To get more detailed documentation, type `help lifft` in MATLAB. Here is a curre
    input_data_renorm     = all input_data, lane normalizations applied
    pred_fit_fine_renorm  = predicted data, lane normalizations applied
  
-  (C) Das lab, Stanford University, 2008-2016
+  (C) Das lab, Stanford University, 2008-2016,2018
 ```
 If you want default values for any inputs, you can typically type in the empty set `[]` for the variable (see above).
 
