@@ -39,7 +39,7 @@ for j = 1:numconc
   plot( resnum, plot_offset*(j-1) + pred_fit(:,j), '-','color',colorcode(j,:));
 end
 xlabel('Residue number');
-ylabel('Peak intensity');
+ylabel('Data value');
 
 for m = 1:length( conc ); legends{m} = num2str( conc(m) ); end;
 legends{ length( conc ) + 1 } = 'fitted stdev';
@@ -88,6 +88,7 @@ if ~isempty( strfind( fit_type, 'melt' ) )
 else
   xlabel('Conc. (mM)]');
 end
-ylabel('Peak intensity');
+ylabel('Data value');
+set(h,'color','k','fontsize',8,'fontweight','bold');
 
 hold off

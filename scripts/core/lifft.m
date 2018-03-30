@@ -182,12 +182,14 @@ toc
 % Make a pretty plot.
 figure(1)
 set(gcf,'Name','Log-posterior contours');
+set(gcf, 'PaperPositionMode','auto','color','white');
 clf
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
   plot( param1, log_L );
   xlabel( set_xscale( fit_type ) );
+  set(gca,'fontsize',8,'fontweight','bold');
 end
 title( titlestring );
 
