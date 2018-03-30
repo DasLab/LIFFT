@@ -181,6 +181,7 @@ toc
 
 % Make a pretty plot.
 figure(1)
+set(gcf,'Name','Log-posterior contours');
 clf
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
@@ -197,6 +198,7 @@ title( titlestring );
 
 % plot fits and residuals as 'gray plots' too.
 figure(4); clf
+set(gcf,'Name','Heat-map, residuals');
 subplot(1,3,1);
 normfactor = mean(mean( input_data ) )/40;
 data_lane_norm = input_data*diag(lane_normalization);
@@ -204,7 +206,6 @@ image( data_lane_norm/normfactor ); title( 'input data' )
 set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
 set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
-
 
 subplot(1,3,2);
 image( pred_fit/normfactor ); title( 'fits' )
@@ -312,6 +313,7 @@ function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_sta
 data_renorm = input_data * diag(lane_normalization);
 
 figure(5); clf;
+set(gcf,'Name','User-defined plot residues');
 colorcode = jet( length( plot_res ) );
 % don't allow pure yellow or light green!
 colorcode(:,2) = colorcode(:,2)/2;

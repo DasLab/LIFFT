@@ -20,6 +20,9 @@ if exist( 'lane_normalization' )
 end
 
 figure(2)
+set(gcf,'Name','All data');
+set(gcf, 'PaperPositionMode','auto','color','white');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clf;
 colorcode = jet(numconc);
@@ -56,6 +59,8 @@ xlim( [min(resnum)-1,  max(resnum)+1] );
 hold off
 
 figure(3)
+set(gcf,'Name','All data (offset)');
+set(gcf, 'PaperPositionMode','auto','color','white');
 %subplot(1,2,2);
 colorcode = jet(numres);
 plot_offset = mean(mean(data));
