@@ -7,6 +7,8 @@ function data_center = centralize( data, refcol, PLOTSTUFF );
 %
 % (C) R. Das, Stanford University 2010-2016.
 
+open_figure( 'Centralize' );
+
 niter = 5;
 stdev_cut  = 2;
 

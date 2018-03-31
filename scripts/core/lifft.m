@@ -180,15 +180,13 @@ pred_fit_fine = C_state'*f;
 toc
 
 % Show fit.
-figure(2)
+open_figure( 'All data (fitted)' );
 plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
 subplot(2,1,1);title( titlestring );
 
 % Make a pretty plot.
-figure(1)
+open_figure( 'LIFFT' );
 set(gcf,'position',[0   464   845   491]);
-set(gcf, 'PaperPositionMode','auto','color','white');
-set(gcf,'Name','LIFFT');
 subplot(2,2,2);cla;
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
@@ -200,8 +198,6 @@ end
 title( titlestring );
 
 % plot fits and residuals as 'gray plots' too.
-figure(1);
-set(gcf,'Name','Heat-map, residuals');
 subplot(1,6,1);
 colormap( gca, 1 - gray(100) );
 normfactor = mean(mean( input_data ) )/40;
@@ -226,9 +222,8 @@ set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:siz
 xticklabel_rotate
 set(gcf, 'PaperPositionMode','auto','color','white');
 
-
 % If user has specified 'plot_res' make a plot specifically focused on the data at those residues.
-figure(1); subplot(2,2,4);
+subplot(2,2,4);
 input_data_rescale = []; pred_fit_fine_rescale = [];
 if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, fit_type ); end;
 
@@ -239,7 +234,7 @@ pred_data_fine_renorm = C_state'*f;
 
 
 % the most interesting plot.
-figure(1)
+open_figure( 'LIFFT' );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -336,7 +331,7 @@ for m = 1:length( plot_res )
   plot( conc_fine, pred_fit_fine_rescale, '-', 'color', colorcode(m,: ), 'linew',2 );     
 end
 hold off;
-set(gca,'fontweight','bold','fontsize',12,'linew',2);
+set(gca,'fontweight','bold','fontsize',9,'linew',2);
 legend( num2str( plot_res' ), 'location', 'southeast' )
 xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );

@@ -84,7 +84,7 @@ set(gca,'ylim',ylim2,'xlim',[ min(conc) max(conc) ])
 if ~isempty( strfind( fit_type, 'melt' ) )
   xlabel('Temperature (C)');
 else
-  xlabel('Conc. (mM)]');
+  xlabel('Concentration');
 end
 ylabel('Data value (offset)');
 %set(h,'color','k','fontsize',8,'fontweight','bold');

@@ -24,7 +24,7 @@ end
 xlim( [ plot_min_x plot_max_x ] );
 ylim( [ plot_min_y plot_max_y ] );
 
-set(gca,'xgrid','on','ygrid','on', 'xtick', xtick, 'ytick',ytick,'linew',2,'fontsize',14,'fontw','bold');
+set(gca,'xgrid','on','ygrid','on', 'xtick', xtick, 'ytick',ytick,'linew',2,'fontsize',10,'fontw','bold');
 xlabel( x_name );
 ylabel( y_name );
 
