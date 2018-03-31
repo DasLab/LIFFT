@@ -12,8 +12,8 @@ function [f, p1_name, p2_name, variable_parameter_name ] = melt( temperatures, d
 %
 % (C) R. Das, Stanford University 2008-2016.
 
-p1_name = 'delta-S';
-p2_name = 'delta-H';
+p1_name = '\DeltaS';
+p2_name = '\DeltaH';
 variable_parameter_name = 'temperature';
 R = 0.001986; % kcal/mol/K
 
