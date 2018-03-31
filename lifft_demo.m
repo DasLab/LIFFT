@@ -43,6 +43,8 @@ switch demo_name
         mg_demo()
     case 'melt'
         melt_demo()
+    case 'melt_dS_dH'
+        melt_dS_dH_demo()
     case 'melt_with_linear_baseline'
         melt_with_linear_baseline_demo()
     otherwise
@@ -145,6 +147,27 @@ plotres = [2 4 10]; % some residues in target stem, just for plotting
 [ p1_best, p2_best, log_L, C_state, ~, conc_fine, ~, input_data_renorm, pred_fit_fine_renorm ] = lifft( input_data(:,subset), temperatures_good(subset), seqpos_out, Tm, delH, whichres, 'melt', [], plotres,0 );
 
 fprintf( '\n\nDemo: RNA hairpin unfolding vs. temperature.\nData are DMS mapping for an AAAA-tetraloop hairpin (manuscript in prep.).\n\n\n' )
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function melt_dS_dH_demo()
+% adapted from examples/DMS_melt_AAAA/analyze_121814_Matt2_C5_P1_Elim_393027_DMS_script.m
+%  Note: fewer input parameters searched, for speed.
+
+% data is saved in here, along with example analysis.
+load save_analyze_121814_Matt2_C5_P1_Elim_393027_DMS.mat
+
+delS = [-90:0.2:-70];
+delH = [-35:0.2:-20];
+
+whichres = [-14:-10, 1:12, 23:27] ; % target hairpin, and flanking GAGUA hairpins.
+subset = [1:8 10:24];  % leaving out 9th profile due to experimental issue
+plotres = [2 4 10]; % some residues in target stem, just for plotting
+
+[ p1_best, p2_best, log_L, C_state, ~, conc_fine, ~, input_data_renorm, pred_fit_fine_renorm ] = lifft( input_data(:,subset), temperatures_good(subset), seqpos_out, delS, delH, whichres, 'melt_dS_dH', [], plotres,0 );
+
+fprintf( '\n\nDemo (dH vs. dS): RNA hairpin unfolding vs. temperature.\nData are DMS mapping for an AAAA-tetraloop hairpin (manuscript in prep.).\n\n\n' )
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
