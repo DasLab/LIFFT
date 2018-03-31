@@ -15,6 +15,8 @@ function lifft_demo( demo_name )
 %  'mg'            = Hill fit to a Mg2+ titration (folding of an SRP internal loop)
 %  'melt'          = Temperature dependent unfolding of a small AAAA-tetraloop hairpin 
 %                       (DMS mapping data)
+%  'melt_dS_dH'     = (Not recommended) Same as melt, with dS/dH as
+%                        fit parameters insrtead of Tm/dH.
 %  'melt_with_linear_baseline'
 %                  = Temperature dependent unfolding of a small AAAA-tetraloop hairpin 
 %                       (UV absorbance data measured on several cuvettes at different [RNA])
@@ -31,10 +33,11 @@ end
 switch demo_name
     case 'all'
         mg_demo(); pause;
-        melt_demo(); pause;
-        melt_with_linear_baseline_demo(); pause;
         single_ligand_demo(); pause
-        one_two_demo()
+        one_two_demo(); pause;
+        melt_demo(); pause;
+        melt_dS_dH_demo(); pause;
+        melt_with_linear_baseline_demo();
     case 'single_ligand'
         single_ligand_demo()
     case {'double_ligand','one_two'}
@@ -158,7 +161,7 @@ function melt_dS_dH_demo()
 % data is saved in here, along with example analysis.
 load save_analyze_121814_Matt2_C5_P1_Elim_393027_DMS.mat
 
-delS = [-90:0.2:-70];
+delS = [-95:0.5:-70];
 delH = [-35:0.2:-20];
 
 whichres = [-14:-10, 1:12, 23:27] ; % target hairpin, and flanking GAGUA hairpins.

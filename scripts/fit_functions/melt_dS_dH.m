@@ -1,4 +1,4 @@
-function [f, p1_name, p2_name, variable_parameter_name ] = melt( temperatures, delS, delH );
+function [f, p1_name, p2_name, p1_unit_name, p2_unit_name, variable_name, variable_unit_name, variable_scale ]  = melt( temperatures, delS, delH );
 % Fit to temperature-dependent melts, with entropy change (delS in cal/mol/K) and 
 %  enthalpy change (delH in kcal/mol)
 %  as parameters.
@@ -14,7 +14,12 @@ function [f, p1_name, p2_name, variable_parameter_name ] = melt( temperatures, d
 
 p1_name = '\DeltaS';
 p2_name = '\DeltaH';
-variable_parameter_name = 'temperature';
+p1_unit_name = 'cal/mol/K';
+p2_unit_name = 'kcal/mol';
+variable_name = 'Temperature';
+variable_unit_name = '{\circ}C';
+variable_scale = 'linear';
+
 R = 0.001986; % kcal/mol/K
 
 % convert celsius to K

@@ -1,4 +1,4 @@
-function [f, p1_name, p2_name, variable_parameter_name ] = melt_with_linear_baseline( temperatures, Tm, delH );
+function [f, p1_name, p2_name, p1_unit_name, p2_unit_name, variable_name, variable_unit_name, variable_scale ]  = melt_with_linear_baseline( temperatures, Tm, delH );
 % Fit to temperature-dependent melts, with melting temperature (Tm) and enthalpy change (delH)
 %  as parameters.
 %
@@ -18,7 +18,11 @@ function [f, p1_name, p2_name, variable_parameter_name ] = melt_with_linear_base
 
 p1_name = 'T_m';
 p2_name = '\DeltaH';
-variable_parameter_name = 'temperature';
+p1_unit_name = '{\circ}C';
+p2_unit_name = 'kcal/mol';
+variable_name = 'Temperature';
+variable_unit_name = '{\circ}C';
+variable_scale = 'linear';
 R = 0.001986; % kcal/mol/K
 
 % convert celsius to K

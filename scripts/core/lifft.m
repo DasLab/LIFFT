@@ -78,7 +78,7 @@ p1_best = 999;
 p2_best = 999;
 
 % check the evaluation function (default is 'hill' )
-[ f, p1_name, p2_name ] = feval( fit_type, conc, param1(1), param2(1) );
+[ f, p1_name, p2_name, p1_unit_name, p2_unit_name, variable_name, variable_unit_name, variable_scale ] = feval( fit_type, conc, param1(1), param2(1) );
 
 tic
 % open matlab slaves if they're not open already. Skip this if user does not have parallelization toolbox.
@@ -145,7 +145,6 @@ end
 [logLbest, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] =...
     do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, lane_normalization_in, C_state_in, [], min_frac_error, baseline_dev );
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Let's try to do a good job of figuring out errors by looking at likelihood near minimum. Where does it drop by 2?
 hold on
@@ -158,9 +157,9 @@ else
  [p1_low,p1_high] = get_1D_error( param1, log_L, p1_best, log_L_best );
  [p2_low,p2_high] = get_1D_error( param2, log_L, p1_best, log_L_best );
 end
-titlestring = sprintf( '%s = %6.4f + %6.4f - %6.4f\n', p1_name, p1_best, p1_high-p1_best, p1_best - p1_low );
-titlestring = [titlestring, sprintf( '%s = %4.2f + %4.2f - %4.2f', p2_name, p2_best, p2_high - p2_best, p2_best - p2_low ) ];
-fprintf( [titlestring,'\n'] )
+titlestring = sprintf( '%s = %6.4f + %6.4f - %6.4f %s\n', p1_name, p1_best, p1_high-p1_best, p1_best - p1_low, p1_unit_name );
+titlestring = [titlestring, sprintf( '%s = %4.2f + %4.2f - %4.2f %s', p2_name, p2_best, p2_high - p2_best, p2_best - p2_low, p2_unit_name ) ];
+fprintf( [ strrep(titlestring, '\', '\\'),'\n'] )
 
 p1_s = [p1_best p1_high-p1_best p1_best - p1_low ];
 p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
@@ -181,7 +180,7 @@ toc
 
 % Show fit.
 open_figure( 'All data (fitted)' );
-plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
+plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, variable_name, variable_scale );
 subplot(2,1,1);title( titlestring );
 
 % Make a pretty plot.
@@ -192,7 +191,8 @@ if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
   plot( param1, log_L );
-  xlabel( set_xscale( fit_type ) );
+  set(gca,'xscale',variable_scale);
+  xlabel( variable_name ); 
   set(gca,'fontsize',8,'fontweight','bold');
 end
 title( titlestring );
@@ -225,7 +225,7 @@ set(gcf, 'PaperPositionMode','auto','color','white');
 % If user has specified 'plot_res' make a plot specifically focused on the data at those residues.
 subplot(2,2,4);
 input_data_rescale = []; pred_fit_fine_rescale = [];
-if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, fit_type ); end;
+if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, variable_name, variable_unit_name, variable_scale ); end;
 
 % useful for plotting values at each data point, compared to fits.
 input_data_renorm = input_data * diag( 1./lane_normalization ); % apply lane normalization
@@ -307,7 +307,7 @@ sigma_vector = [sigma_at_each_residue' std( lane_normalization )];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring, fit_type ); 
+function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine, titlestring, variable_name, variable_unit_name, variable_scale ); 
 % Shows titration, scaled from 0 to 1 at user-specified plot_res
 
 data_renorm = input_data * diag(lane_normalization);
@@ -333,22 +333,12 @@ end
 hold off;
 set(gca,'fontweight','bold','fontsize',9,'linew',2);
 legend( num2str( plot_res' ), 'location', 'southeast' )
-xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
+set(gca,'xscale',variable_scale);
+xlabel( [variable_name,' ',variable_unit_name] ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
 ylim( [-0.5 1.5] );
 set(gcf, 'PaperPositionMode','auto','color','white');
 %title( titlestring,'interpreter','tex' );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function variable_parameter_name = set_xscale( fit_type );
-if ( ~isempty( strfind( fit_type, 'melt' ) ) )
-  %temperature melts are linear in x
-  variable_parameter_name = 'Temperature'; 
-  set(gca,'xscale','lin');
-else
-  variable_parameter_name = 'Concentration';
-  set(gca,'xscale','log');
-end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % generally the state profiles are assumed to be indenpendent of solution condition
