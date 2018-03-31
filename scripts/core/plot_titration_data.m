@@ -25,6 +25,7 @@ set(gcf, 'PaperPositionMode','auto','color','white');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clf;
+subplot(2,1,1);
 colorcode = jet(numconc);
 
 plot_offset = 0.0;
@@ -58,7 +59,8 @@ xlim( [min(resnum)-1,  max(resnum)+1] );
 %set(gca,'ylim',[0 (numconc+1)*plot_offset])
 hold off
 
-figure(3)
+figure(2)
+subplot(2,1,2);
 set(gcf,'Name','All data (offset)');
 set(gcf, 'PaperPositionMode','auto','color','white');
 %subplot(1,2,2);

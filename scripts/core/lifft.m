@@ -181,9 +181,10 @@ toc
 
 % Make a pretty plot.
 figure(1)
+set(gcf,'position',[0   464   845   491]);
+subplot(2,2,2);cla;
 set(gcf,'Name','Log-posterior contours');
 set(gcf, 'PaperPositionMode','auto','color','white');
-clf
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
@@ -195,13 +196,15 @@ title( titlestring );
 
 % Make some more pretty plots.
 figure(2)
+subplot(2,1,1);cla;
 plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
 title( titlestring );
 
 % plot fits and residuals as 'gray plots' too.
-figure(4); clf
+figure(1);
 set(gcf,'Name','Heat-map, residuals');
-subplot(1,3,1);
+subplot(1,6,1);
+colormap( gca, 1 - gray(100) );
 normfactor = mean(mean( input_data ) )/40;
 data_lane_norm = input_data*diag(lane_normalization);
 image( data_lane_norm/normfactor ); title( 'input data' )
@@ -209,15 +212,16 @@ set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:si
 set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 
-subplot(1,3,2);
+subplot(1,6,2);
+colormap( gca, 1 - gray(100) );
 image( pred_fit/normfactor ); title( 'fits' )
 set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
 set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 
-subplot(1,3,3);
+subplot(1,6,3);
 image( abs( pred_fit - data_lane_norm)/normfactor ); title( 'abs(residuals)' )
-colormap( 1 - gray(100) );
+colormap( gca, 1 - gray(100) );
 set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
 set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
@@ -225,6 +229,7 @@ set(gcf, 'PaperPositionMode','auto','color','white');
 
 
 % If user has specified 'plot_res' make a plot specifically focused on the data at those residues.
+figure(1); subplot(2,2,4);
 input_data_rescale = []; pred_fit_fine_rescale = [];
 if length( plot_res ) > 0; [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_state, input_data, lane_normalization, plot_res, conc, resnum, conc_fine, pred_fit_fine,  titlestring, fit_type ); end;
 
@@ -235,8 +240,6 @@ pred_data_fine_renorm = C_state'*f;
 
 % the most interesting plots.
 figure(1)
-figure(4)
-figure(5)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -313,9 +316,8 @@ function [input_data_rescale, pred_fit_fine_rescale] = make_plot_res_plot( C_sta
 % Shows titration, scaled from 0 to 1 at user-specified plot_res
 
 data_renorm = input_data * diag(lane_normalization);
-
-figure(5); clf;
-set(gcf,'Name','User-defined plot residues');
+cla
+%set(gcf,'Name','User-defined plot residues');
 colorcode = jet( length( plot_res ) );
 % don't allow pure yellow or light green!
 colorcode(:,2) = colorcode(:,2)/2;
@@ -335,7 +337,7 @@ for m = 1:length( plot_res )
 end
 hold off;
 set(gca,'fontweight','bold','fontsize',12,'linew',2);
-legend( num2str( plot_res' ), 'location', 'eastoutside' )
+legend( num2str( plot_res' ), 'location', 'southeast' )
 xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
 ylim( [-0.5 1.5] );
