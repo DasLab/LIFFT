@@ -19,12 +19,12 @@ if exist( 'lane_normalization' )
   end
 end
 
-figure(2)
-set(gcf,'Name','All data');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clf
+set(gcf,'Name','All data (fitted)');
 set(gcf, 'PaperPositionMode','auto','color','white');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clf;
 subplot(2,1,1);
 colorcode = jet(numconc);
 
@@ -59,11 +59,7 @@ xlim( [min(resnum)-1,  max(resnum)+1] );
 %set(gca,'ylim',[0 (numconc+1)*plot_offset])
 hold off
 
-figure(2)
 subplot(2,1,2);
-set(gcf,'Name','All data (offset)');
-set(gcf, 'PaperPositionMode','auto','color','white');
-%subplot(1,2,2);
 colorcode = jet(numres);
 plot_offset = mean(mean(data));
 for i = 1:numres
@@ -74,7 +70,7 @@ for i = 1:numres
 
   startpt = max(find(conc>0));
   h = text( conc(startpt), plot_offset*(i-1)+pred_fit(i,startpt), num2str( resnum( i ) ) );
-  set(h,'color','k','fontsize',8,'fontweight','bold');
+  %set(h,'color','k','fontsize',8,'fontweight','bold');
 end
 if ~isempty( strfind( fit_type, 'melt' ) )
   set(gca,'xscale','lin');
@@ -84,13 +80,13 @@ end
 ylim2 = [0 (numres+1)*plot_offset+max(max(data))];
 if ( size( pred_fit, 1 )== 1  ) ylim2 = [min( data) max(data) ]; end;
 set(gca,'ylim',ylim2,'xlim',[ min(conc) max(conc) ])
-set(gca,'linew',2,'fontsize',14,'fontw','bold');
+%set(gca,'linew',2,'fontsize',14,'fontw','bold');
 if ~isempty( strfind( fit_type, 'melt' ) )
   xlabel('Temperature (C)');
 else
   xlabel('Conc. (mM)]');
 end
-ylabel('Data value');
-set(h,'color','k','fontsize',8,'fontweight','bold');
+ylabel('Data value (offset)');
+%set(h,'color','k','fontsize',8,'fontweight','bold');
 
 hold off

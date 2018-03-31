@@ -8,6 +8,6 @@ function [f, p1_name, p2_name ] = hill( conc, K1, n );
 % (C) R. Das, Stanford University 2008-2016.
 
 p1_name = 'K';
-p2_name = 'nHill';
+p2_name = 'n_{Hill}';
 pred = (conc/K1).^n ./ (1 + (conc/K1).^n );
 f = [1-pred; pred ];

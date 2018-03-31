@@ -187,6 +187,8 @@ tag = '090115_AAAA14_Caco_5_90/090115_AAAA14_Caco_5_90_exp';
 this_dirname = fileparts( which( 'run_lifft_on_090115_AAAA14_Caco_5_90_optical_melt.m' ) );
 tag = [this_dirname,'/',tag]
 [d,temperatures,filenames] = read_melt_data( tag );
-[ p1_best, p2_best, log_L, C_state, ~, conc_fine, ~, input_data_renorm, pred_fit_fine_renorm  ]  = lifft( d, temperatures, [], Tm, delH,[],min_type,[],[1:size(d,2)],0,[],min_frac_err);
+plotres = [2  10]; % some of the melt curves, just for plotting
+
+[ p1_best, p2_best, log_L, C_state, ~, conc_fine, ~, input_data_renorm, pred_fit_fine_renorm  ]  = lifft( d, temperatures, [], Tm, delH,[],min_type,[],plotres,0,[],min_frac_err);
 
 fprintf( '\n\nDemo: RNA hairpin unfolding vs. temperature.\nData are UV absorbance at 260 nm for an AAAA-tetraloop hairpin at different RNA concentrations (manuscript in prep.).\n\n\n' )

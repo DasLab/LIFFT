@@ -179,12 +179,17 @@ pred_fit_fine = C_state'*f;
 
 toc
 
+% Show fit.
+figure(2)
+plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
+subplot(2,1,1);title( titlestring );
+
 % Make a pretty plot.
 figure(1)
 set(gcf,'position',[0   464   845   491]);
-subplot(2,2,2);cla;
-set(gcf,'Name','Log-posterior contours');
 set(gcf, 'PaperPositionMode','auto','color','white');
+set(gcf,'Name','LIFFT');
+subplot(2,2,2);cla;
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
@@ -194,12 +199,6 @@ else
 end
 title( titlestring );
 
-% Make some more pretty plots.
-figure(2)
-subplot(2,1,1);cla;
-plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine, fit_type );
-title( titlestring );
-
 % plot fits and residuals as 'gray plots' too.
 figure(1);
 set(gcf,'Name','Heat-map, residuals');
@@ -207,23 +206,23 @@ subplot(1,6,1);
 colormap( gca, 1 - gray(100) );
 normfactor = mean(mean( input_data ) )/40;
 data_lane_norm = input_data*diag(lane_normalization);
-image( data_lane_norm/normfactor ); title( 'input data' )
-set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
-set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+image( data_lane_norm/normfactor ); title( 'Input data' )
+set(gca,'yticklabel',resnum,'ytick',[1:size(input_data,1)]);
+set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 
 subplot(1,6,2);
 colormap( gca, 1 - gray(100) );
-image( pred_fit/normfactor ); title( 'fits' )
-set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
-set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+image( pred_fit/normfactor ); title( 'Fit' )
+set(gca,'yticklabel',resnum,'ytick',[1:size(input_data,1)]);
+set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 
 subplot(1,6,3);
-image( abs( pred_fit - data_lane_norm)/normfactor ); title( 'abs(residuals)' )
+image( abs( pred_fit - data_lane_norm)/normfactor ); title( 'Abs(residuals)' )
 colormap( gca, 1 - gray(100) );
-set(gca,'linew',2,'fontsize',14,'fontw','bold','yticklabel',resnum,'ytick',[1:size(input_data,1)]);
-set(gca,'linew',2,'fontsize',11,'fontw','bold','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+set(gca,'yticklabel',resnum,'ytick',[1:size(input_data,1)]);
+set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 set(gcf, 'PaperPositionMode','auto','color','white');
 
@@ -238,7 +237,8 @@ input_data_renorm = input_data * diag( 1./lane_normalization ); % apply lane nor
 f = feval( fit_type, conc_fine, p1_best, p2_best); % fraction folded values
 pred_data_fine_renorm = C_state'*f;
 
-% the most interesting plots.
+
+% the most interesting plot.
 figure(1)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -342,7 +342,7 @@ xlabel( set_xscale( fit_type ) ); ylabel( 'Fraction transition' );
 xlim( [min( conc_fine ) max( conc_fine ) ] );
 ylim( [-0.5 1.5] );
 set(gcf, 'PaperPositionMode','auto','color','white');
-title( titlestring );
+%title( titlestring,'interpreter','tex' );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function variable_parameter_name = set_xscale( fit_type );
