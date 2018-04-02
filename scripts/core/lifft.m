@@ -186,13 +186,14 @@ subplot(2,1,1);title( titlestring );
 % Make a pretty plot.
 open_figure( 'LIFFT' );
 set(gcf,'position',[0   464   845   491]);
+set(gcf,'position',[0   714   640   440]);
 subplot(2,2,2);cla;
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
   make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name, p1_best, p2_best );
 else
   plot( param1, log_L );
   set(gca,'xscale',variable_scale);
-  xlabel( variable_name ); 
+  xlabel( p1_name ); ylabel( 'log posterior');
   set(gca,'fontsize',8,'fontweight','bold');
 end
 title( titlestring );
@@ -204,21 +205,21 @@ normfactor = mean(mean( input_data ) )/40;
 data_lane_norm = input_data*diag(lane_normalization);
 image( data_lane_norm/normfactor ); title( 'Input data' )
 set(gca,'yticklabel',resnum,'ytick',[1:size(input_data,1)]);
-set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+set(gca,'linew',2,'fontsize',8,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 
 subplot(1,6,2);
 colormap( gca, 1 - gray(100) );
 image( pred_fit/normfactor ); title( 'Fit' )
 set(gca,'yticklabel',resnum,'ytick',[1:size(input_data,1)]);
-set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+set(gca,'linew',2,'fontsize',8,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 
 subplot(1,6,3);
 image( abs( pred_fit - data_lane_norm)/normfactor ); title( 'Abs(residuals)' )
 colormap( gca, 1 - gray(100) );
 set(gca,'yticklabel',resnum,'ytick',[1:size(input_data,1)]);
-set(gca,'linew',2,'fontsize',9,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
+set(gca,'linew',2,'fontsize',8,'fontw','normal','xticklabel',conc,'xtick',[1:size(input_data,2)]);
 xticklabel_rotate
 set(gcf, 'PaperPositionMode','auto','color','white');
 

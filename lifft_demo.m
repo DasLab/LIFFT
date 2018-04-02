@@ -33,11 +33,17 @@ end
 switch demo_name
     case 'all'
         mg_demo(); pause;
+        %print( '-depsc2', 'mg_demo.eps' );
         single_ligand_demo(); pause
+        print( '-depsc2', 'single_ligand_demo.eps' );
         one_two_demo(); pause;
+        %print( '-depsc2', 'one_two_demo.eps' );
         melt_demo(); pause;
+        %print( '-depsc2', 'melt_demo.eps' );
         melt_dS_dH_demo(); pause;
+        %print( '-depsc2', 'melt_dS_dH_demo.eps' );
         melt_with_linear_baseline_demo();
+        %print( '-depsc2', 'melt_with_linear_baseline.eps' );
     case 'single_ligand'
         single_ligand_demo()
     case {'double_ligand','one_two'}
