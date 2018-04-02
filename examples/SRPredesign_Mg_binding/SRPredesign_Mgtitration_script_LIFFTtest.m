@@ -23,8 +23,14 @@ fit_res  = [17:22 34:39]; % fit to just loop that folds
 %fit_res  = [15:23 33:4]; % fit to all residues
 plot_res = [19 20 35 36];
 
-do_centralize = 0;
-%which_lanes = [1:16]; % wild type
-which_lanes = [49:64]; % double mutant (C6G/C22U)
 
-lifft( area_norm(which_res,which_lanes(which_conc)), conc(which_conc), [], K, n, fit_res,'hill',[],plot_res, do_centralize,[],[],1,0.01 )
+do_centralize = 0;
+which_lanes = [49:64]; % double mutant (C6G/C22U)
+lifft( area_norm(which_res,which_lanes(which_conc)), conc(which_conc), [], K, n, fit_res,'hill',[],plot_res );
+pause
+
+which_lanes = [1:16]; % wild type
+lifft( area_norm(which_res,which_lanes(which_conc)), conc(which_conc), [], K, n, fit_res,'hill',[],plot_res );
+
+
+%%%%%%%%%%%%%%
