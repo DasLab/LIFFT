@@ -4,7 +4,7 @@ function [f, p1_name, p2_name, p1_unit_name, p2_unit_name, variable_name, variab
 %  as parameters.
 %
 % Equilibrium between two states, K = 
-%            exp[ (/R) * ( delS - delH/T) ]
+%            exp[ (1/R) * ( delS - delH/T) ]
 %
 % Frac. folded = K/ (1 + K )
 %

@@ -35,7 +35,7 @@ switch demo_name
         mg_demo(); pause;
         %print( '-depsc2', 'mg_demo.eps' );
         single_ligand_demo(); pause
-        print( '-depsc2', 'single_ligand_demo.eps' );
+        %print( '-depsc2', 'single_ligand_demo.eps' );
         one_two_demo(); pause;
         %print( '-depsc2', 'one_two_demo.eps' );
         melt_demo(); pause;
