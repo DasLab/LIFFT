@@ -136,6 +136,9 @@ deviation_fit = (pred_fit - data_renorm );
 sigma_at_each_residue2 = mean( deviation_fit.^2, 2 ) + (SIGMIN_FRAC *mean( data,2)).^2   ;
 sigma_at_each_residue = sqrt( sigma_at_each_residue2);
 
+if length( find( sigma_at_each_residue == 0.0 ) ) > 0
+    fprintf( 'Error at some residues is going to zero; do you have some data values at exactly 0.0 for all conditions? If so add a small offset\n' );
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ lane_normalization, sigma_at_each_residue] = ...

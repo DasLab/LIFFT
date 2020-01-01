@@ -253,7 +253,7 @@ end
 % this is experimental, and leads to an artefact in 2D scans.
 if exist( 'p_best', 'var' ) & exist( 'log_L_best', 'var' )
   insert_pos = 1;
-  while param( insert_pos ) < p_best; insert_pos = insert_pos+1; end;
+  while param( insert_pos ) < p_best & insert_pos < length( param ); insert_pos = insert_pos+1; end;
   
   %clf; plot( param, log_L, 'ko-' ); hold on
   param = [ param( [1:(insert_pos-1)] ), p_best    , param( [insert_pos:end]) ];
